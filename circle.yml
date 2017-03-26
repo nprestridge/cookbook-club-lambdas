@@ -1,0 +1,18 @@
+machine:
+  node:
+    version: 4.3
+
+dependencies:
+  pre:
+    - bash ./circleci/set-configs.sh
+
+test:
+  override:
+    - "true"
+
+deployment:
+  production:
+    branch: deploy
+    commands:
+      - npm run package
+      - aws lambda update-function-code --function-name get-cookbooks --zip-file fileb://package.zip --region ${REGION}

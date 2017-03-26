@@ -1,0 +1,30 @@
+{
+  "name": "get-cookbooks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS Lambda to get list of cookbooks",
+  "main": "index-get-cookbooks.js",
+  "scripts": {
+    "start": "node index-get-cookbooks.js",
+    "mock": "ENV=local babel-node mock/run.js",
+    "build": "npm run build:clean && npm run build:compile && npm run build:install",
+    "package": "npm run build && npm run package:zip",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:compile": "babel src -d dist/src -D && babel index-get-cookbooks.js -d dist -D",
+    "build:clean": "rm -rf dist && mkdir dist",
+    "build:install": "cp package.json dist && find dist -name package.json -execdir npm install --production \\;",
+    "package:zip": "cd dist && zip -r package.zip . && mv package.zip .. && cd .."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.27.0",
+    "babel-runtime": "^6.23.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.23.0",
+    "babel-core": "^6.23.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-latest": "^6.22.0"
+  }
+}

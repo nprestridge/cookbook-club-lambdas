@@ -16,5 +16,6 @@ deployment:
     commands:
       - npm run package
       - aws lambda update-function-code --function-name create-cookbook --zip-file fileb://package.zip --region ${REGION}
+      - aws lambda update-function-code --function-name delete-cookbook --zip-file fileb://package.zip --region ${REGION}
       - aws lambda update-function-code --function-name get-cookbooks --zip-file fileb://package.zip --region ${REGION}
       - aws lambda update-function-code --function-name get-cookbook-recipes --zip-file fileb://package.zip --region ${REGION}

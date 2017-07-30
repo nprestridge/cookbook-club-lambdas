@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "mock:create-cookbook": "ENV=local babel-node mock/create-cookbook/run.js",
+    "mock:delete-cookbook": "ENV=local babel-node mock/delete-cookbook/run.js",
     "mock:get-cookbooks": "ENV=local babel-node mock/get-cookbooks/run.js",
     "mock:get-cookbook-recipes": "ENV=local babel-node mock/get-cookbook-recipes/run.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:install",

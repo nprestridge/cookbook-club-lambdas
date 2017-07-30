@@ -14,6 +14,19 @@ exports.createCookbook = async (event, context, callback) => {
   }
 };
 
+exports.deleteCookbook = async (event, context, callback) => {
+  try {
+    const config = Config.load();
+    const controller = new Controller(config);
+    const response = await controller.deleteCookbook(event);
+
+    return callback(null, response);
+  } catch (e) {
+    console.error(`FATAL Caught: ${JSON.stringify(e)}`);
+    return callback(e);
+  }
+};
+
 exports.getCookbooks = async (event, context, callback) => {
   try {
     const config = Config.load();

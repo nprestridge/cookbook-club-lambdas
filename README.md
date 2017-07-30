@@ -1,2 +1,2 @@
-# cc-get-cookbooks
-AWS Lambda to get cookbooks
+# cookbook-club-lambdas
+AWS Lambdas to get cookbook club information

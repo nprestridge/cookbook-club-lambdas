@@ -1,11 +1,11 @@
 import Config from './src/Config';
 import Controller from './src/Controller';
 
-exports.handler = async (event, context, callback) => {
+exports.getCookbooks = async (event, context, callback) => {
   try {
     const config = Config.load();
     const controller = new Controller(config);
-    const response = await controller.process(event);
+    const response = await controller.getCookbooks(event);
 
     return callback(null, response);
   } catch (e) {

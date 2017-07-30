@@ -14,7 +14,7 @@ export default class Controller {
    * Get list of cookbooks
    * @param {object} event - params
    */
-  async process(event) {
+  async getCookbooks(event) {
     let response = [];
 
     // retrieve cookbooks

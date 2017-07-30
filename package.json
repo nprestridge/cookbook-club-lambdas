@@ -1,17 +1,17 @@
 {
-  "name": "get-cookbooks",
+  "name": "cookbook-club-lambdas",
   "version": "0.1.0",
   "private": true,
-  "description": "AWS Lambda to get list of cookbooks",
-  "main": "index-get-cookbooks.js",
+  "description": "AWS Lambda to process cookbook-club data",
+  "main": "index.js",
   "scripts": {
-    "start": "node index-get-cookbooks.js",
-    "mock": "ENV=local babel-node mock/run.js",
+    "start": "node index.js",
+    "mock:get-cookbooks": "ENV=local babel-node mock/get-cookbooks/run.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:install",
     "package": "npm run build && npm run package:zip",
     "lint": "./node_modules/.bin/eslint *.js src/**, mock/**.js",
     "test": "npm run lint",
-    "build:compile": "babel src -d dist/src -D && babel index-get-cookbooks.js -d dist -D",
+    "build:compile": "babel src -d dist/src -D && babel index.js -d dist -D",
     "build:clean": "rm -rf dist && mkdir dist",
     "build:install": "cp package.json dist && find dist -name package.json -execdir npm install --production \\;",
     "package:zip": "cd dist && zip -r package.zip . && mv package.zip .. && cd .."

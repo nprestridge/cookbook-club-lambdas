@@ -1,7 +1,7 @@
-import index from './../index-get-cookbooks';
+import index from './../../index';
 import event from './event.json';
 
-index.handler(event, {}, (e, m) => {
+index.getCookbooks(event, {}, (e, m) => {
   if (e) {
     console.log('ERROR', e);
     return;

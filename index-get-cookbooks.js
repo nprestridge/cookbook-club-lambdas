@@ -9,7 +9,7 @@ exports.handler = async (event, context, callback) => {
 
     return callback(null, response);
   } catch (e) {
-    console.log(`FATAL Caught: ${JSON.stringify(e)}`);
+    console.error(`FATAL Caught: ${JSON.stringify(e)}`);
     return callback(e);
   }
 };

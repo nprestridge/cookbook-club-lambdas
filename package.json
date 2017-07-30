@@ -9,7 +9,8 @@
     "mock": "ENV=local babel-node mock/run.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:install",
     "package": "npm run build && npm run package:zip",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/.bin/eslint *.js src/**, mock/**.js",
+    "test": "npm run lint",
     "build:compile": "babel src -d dist/src -D && babel index-get-cookbooks.js -d dist -D",
     "build:clean": "rm -rf dist && mkdir dist",
     "build:install": "cp package.json dist && find dist -name package.json -execdir npm install --production \\;",
@@ -25,6 +26,9 @@
     "babel-cli": "^6.23.0",
     "babel-core": "^6.23.1",
     "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-latest": "^6.22.0"
+    "babel-preset-latest": "^6.22.0",
+    "eslint": "^4.3.0",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-import": "^2.7.0"
   }
 }

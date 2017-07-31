@@ -1,7 +1,6 @@
-import AWS from 'aws-sdk'
+import AWS from 'aws-sdk';
 
 export default class Controller {
-
   /**
    * @param {object} configuration values
    */
@@ -21,7 +20,7 @@ export default class Controller {
     if (event && event.params && event.params.path) {
       const title = decodeURI(event.params.path.title);
       const author = decodeURI(event.params.path.author);
-      const meetingDate = event.params.path.meetingDate
+      const meetingDate = event.params.path.meetingDate;
       const blog = event.params.path.blog;
 
       // Check required fields are entered
@@ -43,7 +42,7 @@ export default class Controller {
       // Insert item
       const item = {
         Title: title,
-        Author: author
+        Author: author,
       };
 
       if (meetingDate) {
@@ -54,7 +53,7 @@ export default class Controller {
         item.Blog = blog;
       }
 
-      return await this._updateCookbook(item);
+      return this.updateCookbookDB(item);
     }
 
     return 'No details entered!';
@@ -87,9 +86,9 @@ export default class Controller {
       }
 
       // Do not delete if recipes are present
-      const hasRecipes = await this._hasRecipes(title);
+      const hasRecipes = await this.hasRecipesDB(title);
       if (!hasRecipes) {
-        return await this._deleteCookbook(title, author);
+        return this.deleteCookbookDB(title, author);
       }
 
       return 'Cookbook has recipes which cannot be deleted.';
@@ -103,10 +102,10 @@ export default class Controller {
    * @param {object} event - params
    */
   async getCookbooks(event) {
-    let response = [];
+    const response = [];
 
     // retrieve cookbooks
-    const items = await this._getCookbooks();
+    const items = await this.getCookbooksDB();
 
     let sortBy = 'date';
     let sortOrder = 'desc';
@@ -115,15 +114,15 @@ export default class Controller {
       const field = decodeURI(event.params.path.sortBy);
       const order = decodeURI(event.params.path.sortOrder);
 
-      sortBy = field ? field : sortBy;
-      sortOrder = order ? order : sortOrder;
+      sortBy = field || sortBy;
+      sortOrder = order || sortOrder;
     }
 
     // format JSON
-    items.forEach(function (element) {
+    items.forEach((element) => {
       const formattedResult = {
         title: element.Title,
-        author: element.Author
+        author: element.Author,
       };
 
       if (element.Blog) {
@@ -141,31 +140,26 @@ export default class Controller {
 
     // apply sorting
     if (sortBy === 'title' || sortBy === 'author') {
-      response.sort(function (a, b) {
+      response.sort((a, b) => {
         if (sortOrder === 'asc') {
           return a[sortBy].localeCompare(b[sortBy]);
         }
-        else {
-          return b[sortBy].localeCompare(a[sortBy]);
-        }
+
+        return b[sortBy].localeCompare(a[sortBy]);
       });
-    }
-    else {
+    } else {
       // sort books by meeting date desc, cookbooks with no date will appear at end
-      response.sort(function (a, b) {
+      response.sort((a, b) => {
         if (!a.isoDate && b.isoDate) {
           return 1;
-        }
-        else if (!a.isoDate && !b.isoDate) {
+        } else if (!a.isoDate && !b.isoDate) {
           // If no date on both, sort by title asc
           return a.title - b.title;
-        }
-        else if (sortOrder === 'asc') {
+        } else if (sortOrder === 'asc') {
           return new Date(a.isoDate) - new Date(b.isoDate);
         }
-        else {
-          return new Date(b.isoDate) - new Date(a.isoDate);
-        }
+
+        return new Date(b.isoDate) - new Date(a.isoDate);
       });
     }
 
@@ -180,64 +174,64 @@ export default class Controller {
   *   - title:  cookbook title
   */
   async getCookbookRecipes(event) {
-   let response = [];
+    const response = [];
 
-   const author = decodeURIComponent(event.params.path.author);
-   const cookbook = decodeURIComponent(event.params.path.title);
+    const author = decodeURIComponent(event.params.path.author);
+    const cookbook = decodeURIComponent(event.params.path.title);
 
-   // Check required fields are entered
-   let validationError = '';
+    // Check required fields are entered
+    let validationError = '';
 
-   if (!author) {
-     validationError += 'Select an Author \n';
-   }
+    if (!author) {
+      validationError += 'Select an Author \n';
+    }
 
-   if (!cookbook) {
-     validationError += 'Select a Cookbook \n';
-   }
+    if (!cookbook) {
+      validationError += 'Select a Cookbook \n';
+    }
 
-   if (validationError) {
-     return validationError;
-   }
+    if (validationError) {
+      return validationError;
+    }
 
-   // TODO:  Get cookbook details
+    // TODO:  Get cookbook details
 
-   // retrieve recipes
-   const items = await this._getRecipes(cookbook);
+    // retrieve recipes
+    const items = await this.getRecipesDB(cookbook);
 
-   if (items.length > 0) {
-     const users = await this._getUserMap();
+    if (items.length > 0) {
+      const users = await this.getUserMapDB();
 
-     // format JSON
-     items.forEach(function (element) {
-       const formattedResult = {
-         cookbook: element.Cookbook,
-         name: element.Name,
-         page: element.Page,
-         link: element.Link
-       };
+      // format JSON
+      items.forEach((element) => {
+        const formattedResult = {
+          cookbook: element.Cookbook,
+          name: element.Name,
+          page: element.Page,
+          link: element.Link,
+        };
 
-       // Add user info
-       const userEmail = element.UserEmail;
-       if (users[userEmail]) {
-         formattedResult.cook = users[userEmail].FirstName;
-       }
+        // Add user info
+        const userEmail = element.UserEmail;
+        if (users[userEmail]) {
+          formattedResult.cook = users[userEmail].FirstName;
+        }
 
-       response.push(formattedResult);
-     });
-   }
+        response.push(formattedResult);
+      });
+    }
 
-   return response;
+    return response;
   }
 
-  _updateCookbook(item) {
-    return new Promise((resolve, reject) => {
+  updateCookbookDB(item) {
+    return new Promise((resolve) => {
       const params = {
         TableName: 'Cookbook',
-        Item: item
+        Item: item,
       };
 
-      this.docClient.put(params, function (err, data) {
+      this.docClient.put(params, (err) => {
         if (err) {
           console.error(err);
           return resolve(err);
@@ -247,17 +241,17 @@ export default class Controller {
     });
   }
 
-  _deleteCookbook(title, author) {
-    return new Promise((resolve, reject) => {
+  deleteCookbookDB(title, author) {
+    return new Promise((resolve) => {
       const params = {
         TableName: 'Cookbook',
         Key: {
           Title: title,
-          Author: author
-        }
+          Author: author,
+        },
       };
 
-      this.docClient.delete(params, function (err, data) {
+      this.docClient.delete(params, (err) => {
         if (err) {
           console.error(err);
           return resolve(err);
@@ -267,17 +261,17 @@ export default class Controller {
     });
   }
 
-  _hasRecipes(title) {
+  hasRecipesDB(title) {
     return new Promise((resolve, reject) => {
       const params = {
         TableName: 'Recipe',
         KeyConditionExpression: 'Cookbook = :cookbook',
         ExpressionAttributeValues: {
           ':cookbook': title,
-        }
+        },
       };
 
-      this.docClient.query(params, function (err, data) {
+      this.docClient.query(params, (err, data) => {
         if (err) {
           console.error(err);
           return reject();
@@ -285,20 +279,20 @@ export default class Controller {
 
         if (data && data.Items && data.Items.length > 0) {
           return resolve(true);
-        } else {
-          resolve(false);
         }
+
+        return resolve(false);
       });
     });
   }
 
-  _getCookbooks() {
-    return new Promise((resolve, reject) => {
+  getCookbooksDB() {
+    return new Promise((resolve) => {
       const params = {
-        TableName: 'Cookbook'
+        TableName: 'Cookbook',
       };
 
-      this.docClient.scan(params, function (err, data) {
+      this.docClient.scan(params, (err, data) => {
         if (err) {
           console.error(err);
           return resolve([]);
@@ -308,17 +302,17 @@ export default class Controller {
     });
   }
 
-  _getRecipes(cookbook) {
-    return new Promise((resolve, reject) => {
+  getRecipesDB(cookbook) {
+    return new Promise((resolve) => {
       const params = {
         TableName: 'Recipe',
         KeyConditionExpression: 'Cookbook = :cookbook',
         ExpressionAttributeValues: {
-          ':cookbook': cookbook
-        }
+          ':cookbook': cookbook,
+        },
       };
 
-      this.docClient.query(params, function (err, data) {
+      this.docClient.query(params, (err, data) => {
         if (err) {
           console.error(err);
           return resolve([]);
@@ -329,9 +323,9 @@ export default class Controller {
   }
 
   // Create a user map of key (email) -> user data
-  _getUserMap() {
+  getUserMapDB() {
     const params = {
-      TableName: 'User'
+      TableName: 'User',
     };
 
     return new Promise((resolve, reject) => {
@@ -340,9 +334,9 @@ export default class Controller {
           return reject(err);
         }
 
-        let map = {};
+        const map = {};
         const items = (data && data.Items) ? data.Items : [];
-        items.forEach(function (element) {
+        items.forEach((element) => {
           map[element.Email] = element;
         });
 
@@ -350,5 +344,4 @@ export default class Controller {
       });
     });
   }
-
 }

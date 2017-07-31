@@ -1,16 +1,18 @@
 /**
  * Load config for ENV
  */
+
+import local from './config/local';
+import production from './config/production';
+
 export default class Config {
   static load() {
     let config;
 
     if (process.env.ENV === 'local') {
-      config = require('./config/local.js');
-    }
-    else {
-      // default
-      config = require('./config/production.js');
+      config = local;
+    } else {
+      config = production;
     }
 
     return config.values;

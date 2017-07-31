@@ -12,7 +12,7 @@
     "mock:get-cookbook-recipes": "ENV=local babel-node mock/get-cookbook-recipes/run.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:install",
     "package": "npm run build && npm run package:zip",
-    "lint": "./node_modules/.bin/eslint *.js src/**, mock/**.js",
+    "lint": "./node_modules/.bin/eslint *.js src/** mock/**.js",
     "test": "npm run lint",
     "build:compile": "babel src -d dist/src -D && babel index.js -d dist -D",
     "build:clean": "rm -rf dist && mkdir dist",

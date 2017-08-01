@@ -1,11 +1,7 @@
-import index from './../../index';
 import event from './event.json';
+import handler from '../handler';
+import index from './../../index';
 
 index.createCookbook(event, {}, (e, m) => {
-  if (e) {
-    console.log('ERROR', e);
-    return;
-  }
-
-  console.log(m);
+  handler.displayResult(e, m);
 });

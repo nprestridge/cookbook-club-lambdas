@@ -1,6 +1,6 @@
 import DBQuery from './DBQuery';
 
-export default class Controller {
+export default class CookbookController {
   /**
    * @param {object} configuration values
    */
@@ -15,7 +15,7 @@ export default class Controller {
    *   - author:  cookbook author
    *   - title:  cookbook title
    */
-  async createCookbook(event) {
+  async create(event) {
     if (event && event.params && event.params.path) {
       const title = decodeURI(event.params.path.title);
       const author = decodeURI(event.params.path.author);
@@ -65,7 +65,7 @@ export default class Controller {
    *   - author:  cookbook author
    *   - title:  cookbook title
    */
-  async deleteCookbook(event) {
+  async delete(event) {
     if (event && event.params && event.params.path) {
       const title = decodeURI(event.params.path.title);
       const author = decodeURI(event.params.path.author);
@@ -100,7 +100,7 @@ export default class Controller {
    * Get list of cookbooks
    * @param {object} event - params
    */
-  async getCookbooks(event) {
+  async getAll(event) {
     const response = [];
 
     // retrieve cookbooks
@@ -159,64 +159,6 @@ export default class Controller {
         }
 
         return new Date(b.isoDate) - new Date(a.isoDate);
-      });
-    }
-
-    return response;
-  }
-
-  /**
-  * Get all recipes by cookbook name in DynamoDB
-  *
-  * @param {object} event - params
-  *   - author:  cookbook author
-  *   - title:  cookbook title
-  */
-  async getCookbookRecipes(event) {
-    const response = [];
-
-    const author = decodeURIComponent(event.params.path.author);
-    const cookbook = decodeURIComponent(event.params.path.title);
-
-    // Check required fields are entered
-    let validationError = '';
-
-    if (!author) {
-      validationError += 'Select an Author \n';
-    }
-
-    if (!cookbook) {
-      validationError += 'Select a Cookbook \n';
-    }
-
-    if (validationError) {
-      return validationError;
-    }
-
-    // TODO:  Get cookbook details
-
-    // retrieve recipes
-    const items = await this.db.getRecipes(cookbook);
-
-    if (items.length > 0) {
-      const users = await this.db.getUserMap();
-
-      // format JSON
-      items.forEach((element) => {
-        const formattedResult = {
-          cookbook: element.Cookbook,
-          name: element.Name,
-          page: element.Page,
-          link: element.Link,
-        };
-
-        // Add user info
-        const userEmail = element.UserEmail;
-        if (users[userEmail]) {
-          formattedResult.cook = users[userEmail].FirstName;
-        }
-
-        response.push(formattedResult);
       });
     }
 

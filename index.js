@@ -1,8 +1,10 @@
 import Config from './src/Config';
-import Controller from './src/Controller';
+import CookbookController from './src/CookbookController';
+import RecipeController from './src/RecipeController';
 
 const config = Config.load();
-const controller = new Controller(config);
+const cookbook = new CookbookController(config);
+const recipe = new RecipeController(config);
 
 /**
  * A map of lambda handlers to controller methods
@@ -10,16 +12,16 @@ const controller = new Controller(config);
  */
 const handlers = {
   createCookbook: function handler(event) {
-    return controller.createCookbook(event);
+    return cookbook.create(event);
   },
   deleteCookbook: function handler(event) {
-    return controller.deleteCookbook(event);
+    return cookbook.delete(event);
   },
   getCookbooks: function handler(event) {
-    return controller.getCookbooks(event);
+    return cookbook.getAll(event);
   },
   getCookbookRecipes: function handler(event) {
-    return controller.getCookbookRecipes(event);
+    return recipe.getByCookbook(event);
   },
 };
 

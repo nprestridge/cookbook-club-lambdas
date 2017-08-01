@@ -1,11 +1,13 @@
-import DBQuery from './DBQuery';
+import RecipeQueries from './db/RecipeQueries';
+import UserQueries from './db/UserQueries';
 
 export default class Controller {
   /**
    * @param {object} configuration values
    */
   constructor(config) {
-    this.db = new DBQuery(config);
+    this.recipes = new RecipeQueries(config);
+    this.users = new UserQueries(config);
   }
 
   /**
@@ -39,10 +41,10 @@ export default class Controller {
     // TODO:  Get cookbook details
 
     // retrieve recipes
-    const items = await this.db.getRecipes(cookbook);
+    const items = await this.recipes.getAllByCookbook(cookbook);
 
     if (items.length > 0) {
-      const users = await this.db.getUserMap();
+      const users = await this.users.getEmailMap();
 
       // format JSON
       items.forEach((element) => {

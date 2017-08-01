@@ -1,11 +1,13 @@
-import DBQuery from './DBQuery';
+import CookbookQueries from './db/CookbookQueries';
+import RecipeQueries from './db/RecipeQueries';
 
 export default class CookbookController {
   /**
    * @param {object} configuration values
    */
   constructor(config) {
-    this.db = new DBQuery(config);
+    this.cookbooks = new CookbookQueries(config);
+    this.recipes = new RecipeQueries(config);
   }
 
   /**
@@ -52,7 +54,7 @@ export default class CookbookController {
         item.Blog = blog;
       }
 
-      return this.db.updateCookbook(item);
+      return this.cookbooks.update(item);
     }
 
     return 'No details entered!';
@@ -85,9 +87,9 @@ export default class CookbookController {
       }
 
       // Do not delete if recipes are present
-      const hasRecipes = await this.db.hasRecipes(title);
+      const hasRecipes = await this.recipes.hasRecipes(title);
       if (!hasRecipes) {
-        return this.db.deleteCookbook(title, author);
+        return this.cookbooks.delete(title, author);
       }
 
       return 'Cookbook has recipes which cannot be deleted.';
@@ -104,7 +106,7 @@ export default class CookbookController {
     const response = [];
 
     // retrieve cookbooks
-    const items = await this.db.getCookbooks();
+    const items = await this.cookbooks.getAll();
 
     let sortBy = 'date';
     let sortOrder = 'desc';

@@ -1,12 +1,11 @@
-import AWS from 'aws-sdk';
+import DBQuery from './DBQuery';
 
 export default class Controller {
   /**
    * @param {object} configuration values
    */
   constructor(config) {
-    this.config = config;
-    this.docClient = new AWS.DynamoDB.DocumentClient(config.dynamodb);
+    this.db = new DBQuery(config);
   }
 
   /**
@@ -53,7 +52,7 @@ export default class Controller {
         item.Blog = blog;
       }
 
-      return this.updateCookbookDB(item);
+      return this.db.updateCookbook(item);
     }
 
     return 'No details entered!';
@@ -86,9 +85,9 @@ export default class Controller {
       }
 
       // Do not delete if recipes are present
-      const hasRecipes = await this.hasRecipesDB(title);
+      const hasRecipes = await this.db.hasRecipes(title);
       if (!hasRecipes) {
-        return this.deleteCookbookDB(title, author);
+        return this.db.deleteCookbook(title, author);
       }
 
       return 'Cookbook has recipes which cannot be deleted.';
@@ -105,7 +104,7 @@ export default class Controller {
     const response = [];
 
     // retrieve cookbooks
-    const items = await this.getCookbooksDB();
+    const items = await this.db.getCookbooks();
 
     let sortBy = 'date';
     let sortOrder = 'desc';
@@ -197,10 +196,10 @@ export default class Controller {
     // TODO:  Get cookbook details
 
     // retrieve recipes
-    const items = await this.getRecipesDB(cookbook);
+    const items = await this.db.getRecipes(cookbook);
 
     if (items.length > 0) {
-      const users = await this.getUserMapDB();
+      const users = await this.db.getUserMap();
 
       // format JSON
       items.forEach((element) => {
@@ -222,126 +221,5 @@ export default class Controller {
     }
 
     return response;
-  }
-
-  updateCookbookDB(item) {
-    return new Promise((resolve) => {
-      const params = {
-        TableName: 'Cookbook',
-        Item: item,
-      };
-
-      this.docClient.put(params, (err) => {
-        if (err) {
-          console.error(err);
-          return resolve(err);
-        }
-        return resolve('Success');
-      });
-    });
-  }
-
-  deleteCookbookDB(title, author) {
-    return new Promise((resolve) => {
-      const params = {
-        TableName: 'Cookbook',
-        Key: {
-          Title: title,
-          Author: author,
-        },
-      };
-
-      this.docClient.delete(params, (err) => {
-        if (err) {
-          console.error(err);
-          return resolve(err);
-        }
-        return resolve('Success');
-      });
-    });
-  }
-
-  hasRecipesDB(title) {
-    return new Promise((resolve, reject) => {
-      const params = {
-        TableName: 'Recipe',
-        KeyConditionExpression: 'Cookbook = :cookbook',
-        ExpressionAttributeValues: {
-          ':cookbook': title,
-        },
-      };
-
-      this.docClient.query(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return reject();
-        }
-
-        if (data && data.Items && data.Items.length > 0) {
-          return resolve(true);
-        }
-
-        return resolve(false);
-      });
-    });
-  }
-
-  getCookbooksDB() {
-    return new Promise((resolve) => {
-      const params = {
-        TableName: 'Cookbook',
-      };
-
-      this.docClient.scan(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve([]);
-        }
-        return resolve(data.Items || []);
-      });
-    });
-  }
-
-  getRecipesDB(cookbook) {
-    return new Promise((resolve) => {
-      const params = {
-        TableName: 'Recipe',
-        KeyConditionExpression: 'Cookbook = :cookbook',
-        ExpressionAttributeValues: {
-          ':cookbook': cookbook,
-        },
-      };
-
-      this.docClient.query(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve([]);
-        }
-        return resolve(data.Items || []);
-      });
-    });
-  }
-
-  // Create a user map of key (email) -> user data
-  getUserMapDB() {
-    const params = {
-      TableName: 'User',
-    };
-
-    return new Promise((resolve, reject) => {
-      this.docClient.scan(params, (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-
-        const map = {};
-        const items = (data && data.Items) ? data.Items : [];
-        items.forEach((element) => {
-          map[element.Email] = element;
-        });
-
-        return resolve(map);
-      });
-    });
   }
 }

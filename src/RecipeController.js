@@ -14,21 +14,15 @@ export default class Controller {
   * Get all recipes by cookbook name in DynamoDB
   *
   * @param {object} event - params
-  *   - author:  cookbook author
   *   - title:  cookbook title
   */
   async getByCookbook(event) {
     const response = [];
 
-    const author = decodeURIComponent(event.params.path.author);
     const cookbook = decodeURIComponent(event.params.path.title);
 
     // Check required fields are entered
     let validationError = '';
-
-    if (!author) {
-      validationError += 'Select an Author \n';
-    }
 
     if (!cookbook) {
       validationError += 'Select a Cookbook \n';

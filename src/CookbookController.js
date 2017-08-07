@@ -1,3 +1,4 @@
+import moment from 'moment';
 import CookbookQueries from './db/CookbookQueries';
 import RecipeQueries from './db/RecipeQueries';
 
@@ -8,6 +9,30 @@ export default class CookbookController {
   constructor(config) {
     this.cookbooks = new CookbookQueries(config);
     this.recipes = new RecipeQueries(config);
+  }
+
+  /**
+   * Check if cookbook fields are valid
+   * @param  {string} title
+   * @param  {string} author
+   * @param  {string} date
+   * @return {string}        Returns error message if validation fails
+   */
+  static validateCookbook(title, author, date) {
+    let validationError = '';
+    if (!title) {
+      validationError += 'Enter a title \n';
+    }
+
+    if (!author) {
+      validationError += 'Enter an author \n';
+    }
+
+    if (date && !(moment(date, 'YYYY-MM-DD', true).isValid())) {
+      validationError += `Date ${date} is not in YYYY-MM-DD format \n`;
+    }
+
+    return validationError;
   }
 
   /**
@@ -25,16 +50,7 @@ export default class CookbookController {
       const blog = event.params.path.blog;
 
       // Check required fields are entered
-      let validationError = '';
-      if (!title) {
-        validationError += 'Enter a title \n';
-      }
-
-      if (!author) {
-        validationError += 'Enter an author \n';
-      }
-
-      // TODO - Validate date
+      const validationError = CookbookController.validateCookbook(title, author, meetingDate);
 
       if (validationError) {
         return validationError;
@@ -73,14 +89,7 @@ export default class CookbookController {
       const author = decodeURI(event.params.path.author);
 
       // Check required fields are entered
-      let validationError = '';
-      if (!title) {
-        validationError += 'Enter a title \n';
-      }
-
-      if (!author) {
-        validationError += 'Enter an author \n';
-      }
+      const validationError = CookbookController.validateCookbook(title, author);
 
       if (validationError) {
         return validationError;

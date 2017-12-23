@@ -145,6 +145,10 @@ export default class CookbookController {
         formattedResult.displayDate = new Date(meetingDate).toLocaleDateString();
       }
 
+      if (element.Thumbnail) {
+        formattedResult.thumbnail = element.Thumbnail;
+      }
+
       response.push(formattedResult);
     });
 

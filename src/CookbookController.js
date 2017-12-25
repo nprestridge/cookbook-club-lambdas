@@ -149,6 +149,10 @@ export default class CookbookController {
         formattedResult.thumbnail = element.Thumbnail;
       }
 
+      if (element.AmazonLink) {
+        formattedResult.amazon = element.AmazonLink;
+      }
+
       response.push(formattedResult);
     });
 

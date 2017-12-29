@@ -19,20 +19,57 @@ export default class CookbookController {
    * @return {string}        Returns error message if validation fails
    */
   static validateCookbook(title, author, date) {
-    let validationError = '';
+    const validationError = [];
+
     if (!title) {
-      validationError += 'Enter a title \n';
+      validationError.push('Enter a title');
     }
 
     if (!author) {
-      validationError += 'Enter an author \n';
+      validationError.push('Enter an author');
     }
 
     if (date && !(moment(date, 'YYYY-MM-DD', true).isValid())) {
-      validationError += `Date ${date} is not in YYYY-MM-DD format \n`;
+      validationError.push(`Date ${date} is not in YYYY-MM-DD format`);
     }
 
-    return validationError;
+    return (validationError.length > 0) ? validationError : null;
+  }
+
+  /**
+   * Returns API JSON for DynamoDB cookbook item
+   * @param  {object} item  DynamoDB object
+   * @return {object}       JSON to return
+   */
+  static formatCookbookJSON(item) {
+    if (!item) {
+      return null;
+    }
+
+    const formattedResult = {
+      title: item.Title,
+      author: item.Author,
+    };
+
+    if (item.Blog) {
+      formattedResult.blog = item.Blog;
+    }
+
+    if (item.MeetingDate) {
+      const meetingDate = item.MeetingDate;
+      formattedResult.isoDate = meetingDate;
+      formattedResult.displayDate = new Date(meetingDate).toLocaleDateString();
+    }
+
+    if (item.Thumbnail) {
+      formattedResult.thumbnail = item.Thumbnail;
+    }
+
+    if (item.AmazonLink) {
+      formattedResult.amazon = item.AmazonLink;
+    }
+
+    return formattedResult;
   }
 
   /**
@@ -44,8 +81,8 @@ export default class CookbookController {
    */
   async create(event) {
     if (event && event.params && event.params.path) {
-      const title = decodeURI(event.params.path.title);
-      const author = decodeURI(event.params.path.author);
+      const title = event.params.path.title;
+      const author = event.params.path.author;
       const meetingDate = event.params.path.meetingDate;
       const blog = event.params.path.blog;
 
@@ -58,8 +95,8 @@ export default class CookbookController {
 
       // Insert item
       const item = {
-        Title: title,
-        Author: author,
+        Title: decodeURI(title),
+        Author: decodeURI(author),
       };
 
       if (meetingDate) {
@@ -85,8 +122,8 @@ export default class CookbookController {
    */
   async delete(event) {
     if (event && event.params && event.params.path) {
-      const title = decodeURI(event.params.path.title);
-      const author = decodeURI(event.params.path.author);
+      let title = event.params.path.title;
+      let author = event.params.path.author;
 
       // Check required fields are entered
       const validationError = CookbookController.validateCookbook(title, author);
@@ -96,6 +133,9 @@ export default class CookbookController {
       }
 
       // Do not delete if recipes are present
+      title = decodeURI(title);
+      author = decodeURI(author);
+
       const hasRecipes = await this.recipes.hasRecipes(title);
       if (!hasRecipes) {
         return this.cookbooks.delete(title, author);
@@ -117,44 +157,26 @@ export default class CookbookController {
     // retrieve cookbooks
     const items = await this.cookbooks.getAll();
 
+    if (!items) {
+      return response;
+    }
+
+    // format cookbooks
+    items.forEach((element) => {
+      response.push(CookbookController.formatCookbookJSON(element));
+    });
+
+    // determine sort type
     let sortBy = 'date';
     let sortOrder = 'desc';
 
     if (event && event.params && event.params.path) {
-      const field = decodeURI(event.params.path.sortBy);
-      const order = decodeURI(event.params.path.sortOrder);
+      const field = event.params.path.sortBy;
+      const order = event.params.path.sortOrder;
 
       sortBy = field || sortBy;
       sortOrder = order || sortOrder;
     }
-
-    // format JSON
-    items.forEach((element) => {
-      const formattedResult = {
-        title: element.Title,
-        author: element.Author,
-      };
-
-      if (element.Blog) {
-        formattedResult.blog = element.Blog;
-      }
-
-      if (element.MeetingDate) {
-        const meetingDate = element.MeetingDate;
-        formattedResult.isoDate = meetingDate;
-        formattedResult.displayDate = new Date(meetingDate).toLocaleDateString();
-      }
-
-      if (element.Thumbnail) {
-        formattedResult.thumbnail = element.Thumbnail;
-      }
-
-      if (element.AmazonLink) {
-        formattedResult.amazon = element.AmazonLink;
-      }
-
-      response.push(formattedResult);
-    });
 
     // apply sorting
     if (sortBy === 'title' || sortBy === 'author') {
@@ -172,7 +194,7 @@ export default class CookbookController {
           return 1;
         } else if (!a.isoDate && !b.isoDate) {
           // If no date on both, sort by title asc
-          return a.title - b.title;
+          return (a.title).localeCompare(b.title);
         } else if (sortOrder === 'asc') {
           return new Date(a.isoDate) - new Date(b.isoDate);
         }

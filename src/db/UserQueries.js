@@ -22,10 +22,11 @@ export default class UserQueries {
       TableName: 'User',
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.docClient.scan(params, (err, data) => {
         if (err) {
-          return reject(err);
+          console.error(err);
+          return resolve(err);
         }
 
         const map = {};

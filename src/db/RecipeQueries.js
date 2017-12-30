@@ -19,19 +19,13 @@ export default class RecipeQueries {
    * @return {Boolean}
    */
   hasRecipes(title) {
-    return new Promise((resolve, reject) => {
-      const params = {
-        TableName: 'Recipe',
-        KeyConditionExpression: 'Cookbook = :cookbook',
-        ExpressionAttributeValues: {
-          ':cookbook': title,
-        },
-      };
+    return new Promise((resolve) => {
+      const params = RecipeQueries.getRecipesByCookbookParams(title);
 
       this.docClient.query(params, (err, data) => {
         if (err) {
           console.error(err);
-          return reject();
+          return resolve(err);
         }
 
         if (data && data.Items && data.Items.length > 0) {
@@ -50,21 +44,33 @@ export default class RecipeQueries {
    */
   getAllByCookbook(cookbook) {
     return new Promise((resolve) => {
-      const params = {
-        TableName: 'Recipe',
-        KeyConditionExpression: 'Cookbook = :cookbook',
-        ExpressionAttributeValues: {
-          ':cookbook': cookbook,
-        },
-      };
+      const params = RecipeQueries.getRecipesByCookbookParams(cookbook);
 
       this.docClient.query(params, (err, data) => {
         if (err) {
           console.error(err);
           return resolve([]);
         }
+
         return resolve(data.Items || []);
       });
     });
+  }
+
+  /**
+   * Returns params to get recipes by cookbook
+   * @param  {string} cookbook
+   * @return {object}
+   */
+  static getRecipesByCookbookParams(cookbook) {
+    const params = {
+      TableName: 'Recipe',
+      KeyConditionExpression: 'Cookbook = :cookbook',
+      ExpressionAttributeValues: {
+        ':cookbook': cookbook,
+      },
+    };
+
+    return params;
   }
 }

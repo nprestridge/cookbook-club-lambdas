@@ -1,13 +1,40 @@
 import RecipeQueries from './db/RecipeQueries';
 import UserQueries from './db/UserQueries';
 
-export default class Controller {
+export default class RecipeController {
   /**
    * @param {object} configuration values
    */
   constructor(config) {
     this.recipes = new RecipeQueries(config);
     this.users = new UserQueries(config);
+  }
+
+  /**
+   * Returns API JSON for DynamoDB recipe item
+   * @param  {object} item    DynamoDB object
+   * @param  {object} users   Users map
+   * @return {object}         JSON to return
+   */
+  static formatRecipeJSON(item, users) {
+    if (!item) {
+      return null;
+    }
+
+    const formattedResult = {
+      cookbook: item.Cookbook,
+      name: item.Name,
+      page: item.Page,
+      link: item.Link,
+    };
+
+    // Add user info
+    const userEmail = item.UserEmail;
+    if (userEmail && users && users[userEmail]) {
+      formattedResult.cook = users[userEmail].FirstName;
+    }
+
+    return formattedResult;
   }
 
   /**
@@ -18,17 +45,14 @@ export default class Controller {
   */
   async getByCookbook(event) {
     const response = [];
+    let cookbook;
 
-    const cookbook = decodeURIComponent(event.params.path.title);
-
-    // Check required fields are entered
-    let validationError = '';
-
-    if (!cookbook) {
-      validationError += 'Select a Cookbook \n';
+    if (event && event.params && event.params.path) {
+      cookbook = decodeURIComponent(event.params.path.title);
     }
 
-    if (validationError) {
+    if (!cookbook) {
+      const validationError = 'Select a Cookbook';
       return validationError;
     }
 
@@ -37,25 +61,13 @@ export default class Controller {
     // retrieve recipes
     const items = await this.recipes.getAllByCookbook(cookbook);
 
-    if (items.length > 0) {
+    if (items && items.length > 0) {
       const users = await this.users.getEmailMap();
 
       // format JSON
       items.forEach((element) => {
-        const formattedResult = {
-          cookbook: element.Cookbook,
-          name: element.Name,
-          page: element.Page,
-          link: element.Link,
-        };
-
-        // Add user info
-        const userEmail = element.UserEmail;
-        if (users[userEmail]) {
-          formattedResult.cook = users[userEmail].FirstName;
-        }
-
-        response.push(formattedResult);
+        const json = RecipeController.formatRecipeJSON(element, users);
+        response.push(json);
       });
     }
 

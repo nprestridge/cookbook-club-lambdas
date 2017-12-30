@@ -30,6 +30,7 @@ export default class CookbookQueries {
           console.error(err);
           return resolve(err);
         }
+
         return resolve('Success');
       });
     });
@@ -76,6 +77,7 @@ export default class CookbookQueries {
           console.error(err);
           return resolve([]);
         }
+
         return resolve(data.Items || []);
       });
     });

@@ -1,22 +1,14 @@
-import RecipeQueries from './db/RecipeQueries';
-import UserQueries from './db/UserQueries';
+const RecipeQueries = require('./db/RecipeQueries');
+const UserQueries = require('./db/UserQueries');
 
-export default class RecipeController {
-  /**
-   * @param {object} configuration values
-   */
-  constructor(config) {
-    this.recipes = new RecipeQueries(config);
-    this.users = new UserQueries(config);
-  }
-
+module.exports = {
   /**
    * Returns API JSON for DynamoDB recipe item
    * @param  {object} item    DynamoDB object
    * @param  {object} users   Users map
    * @return {object}         JSON to return
    */
-  static formatRecipeJSON(item, users) {
+  formatRecipeJSON(item, users) {
     if (!item) {
       return null;
     }
@@ -35,7 +27,7 @@ export default class RecipeController {
     }
 
     return formattedResult;
-  }
+  },
 
   /**
   * Get all recipes by cookbook name in DynamoDB
@@ -59,18 +51,18 @@ export default class RecipeController {
     // TODO:  Get cookbook details
 
     // retrieve recipes
-    const items = await this.recipes.getAllByCookbook(cookbook);
+    const items = await RecipeQueries.getAllByCookbook(cookbook);
 
     if (items && items.length > 0) {
-      const users = await this.users.getEmailMap();
+      const users = await UserQueries.getEmailMap();
 
       // format JSON
       items.forEach((element) => {
-        const json = RecipeController.formatRecipeJSON(element, users);
+        const json = this.formatRecipeJSON(element, users);
         response.push(json);
       });
     }
 
     return response;
-  }
-}
+  },
+};

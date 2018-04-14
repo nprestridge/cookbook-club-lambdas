@@ -1,10 +1,5 @@
-import Config from './src/Config';
-import CookbookController from './src/CookbookController';
-import RecipeController from './src/RecipeController';
-
-const config = Config.load();
-const cookbook = new CookbookController(config);
-const recipe = new RecipeController(config);
+const CookbookController = require('./src/CookbookController');
+const RecipeController = require('./src/RecipeController');
 
 /**
  * A map of lambda handlers to controller methods
@@ -12,16 +7,16 @@ const recipe = new RecipeController(config);
  */
 const handlers = {
   createCookbook: function handler(event) {
-    return cookbook.create(event);
+    return CookbookController.create(event);
   },
   deleteCookbook: function handler(event) {
-    return cookbook.delete(event);
+    return CookbookController.delete(event);
   },
   getCookbooks: function handler(event) {
-    return cookbook.getAll(event);
+    return CookbookController.getAll(event);
   },
   getCookbookRecipes: function handler(event) {
-    return recipe.getByCookbook(event);
+    return RecipeController.getByCookbook(event);
   },
 };
 
@@ -54,11 +49,11 @@ module.exports = {
   },
 
   async getCookbooks(event, context, callback) {
-    module.exports.execute('getCookbooks', event, context, callback);
+    await module.exports.execute('getCookbooks', event, context, callback);
   },
 
   async getCookbookRecipes(event, context, callback) {
-    module.exports.execute('getCookbookRecipes', event, context, callback);
+    await module.exports.execute('getCookbookRecipes', event, context, callback);
   },
 
 };

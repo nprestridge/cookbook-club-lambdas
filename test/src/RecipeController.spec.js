@@ -1,12 +1,10 @@
-import chai from 'chai';
-import sinon from 'sinon';
-import Config from '../../src/Config';
-import RecipeController from '../../src/RecipeController';
+const chai = require('chai');
+const sinon = require('sinon');
+const RecipeController = require('../../src/RecipeController');
+const RecipeQueries = require('../../src/db/RecipeQueries');
+const UserQueries = require('../../src/db/UserQueries');
 
 const assert = chai.assert;
-
-const config = Config.load();
-const controller = new RecipeController(config);
 
 describe('src/RecipeController', () => {
   const sandbox = sinon.sandbox.create();
@@ -87,14 +85,14 @@ describe('src/RecipeController', () => {
 
   describe('getByCookbook', async() => {
     it('should return error message if no event', async () => {
-      const error = await controller.getByCookbook();
+      const error = await RecipeController.getByCookbook();
       assert.equal(error, 'Select a Cookbook');
     });
 
     it('should return error message if no event params', async () => {
       const event = {};
 
-      const error = await controller.getByCookbook(event);
+      const error = await RecipeController.getByCookbook(event);
       assert.equal(error, 'Select a Cookbook');
     });
 
@@ -103,7 +101,7 @@ describe('src/RecipeController', () => {
         params: {},
       };
 
-      const error = await controller.getByCookbook(event);
+      const error = await RecipeController.getByCookbook(event);
       assert.equal(error, 'Select a Cookbook');
     });
 
@@ -117,12 +115,12 @@ describe('src/RecipeController', () => {
         },
       };
 
-      sandbox.stub(controller.recipes, 'getAllByCookbook')
+      sandbox.stub(RecipeQueries, 'getAllByCookbook')
         .withArgs(decodeURI(title))
         .returns([]);
 
-      const result = await controller.getByCookbook(event);
-      assert.equal(controller.recipes.getAllByCookbook.callCount, 1);
+      const result = await RecipeController.getByCookbook(event);
+      assert.equal(RecipeQueries.getAllByCookbook.callCount, 1);
       assert.isArray(result);
       assert.isEmpty(result);
     });
@@ -137,12 +135,12 @@ describe('src/RecipeController', () => {
         },
       };
 
-      sandbox.stub(controller.recipes, 'getAllByCookbook')
+      sandbox.stub(RecipeQueries, 'getAllByCookbook')
         .withArgs(decodeURI(title))
         .returns(null);
 
-      const result = await controller.getByCookbook(event);
-      assert.equal(controller.recipes.getAllByCookbook.callCount, 1);
+      const result = await RecipeController.getByCookbook(event);
+      assert.equal(RecipeQueries.getAllByCookbook.callCount, 1);
       assert.isArray(result);
       assert.isEmpty(result);
     });
@@ -159,14 +157,14 @@ describe('src/RecipeController', () => {
 
       const recipes = [recipe1, recipe2, recipe3];
 
-      sandbox.stub(controller.recipes, 'getAllByCookbook')
+      sandbox.stub(RecipeQueries, 'getAllByCookbook')
         .withArgs(decodeURI(title))
         .returns(recipes);
 
-      sandbox.stub(controller.users, 'getEmailMap')
+      sandbox.stub(UserQueries, 'getEmailMap')
         .returns(userMap);
 
-      const result = await controller.getByCookbook(event);
+      const result = await RecipeController.getByCookbook(event);
       assert.isArray(result);
       assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1, userMap));
       assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2, userMap));

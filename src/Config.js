@@ -2,11 +2,11 @@
  * Load config for ENV
  */
 
-import local from './config/local';
-import production from './config/production';
+const local = require('./config/local');
+const production = require('./config/production');
 
-export default class Config {
-  static load() {
+module.exports = {
+  load() {
     let config;
 
     if (process.env.ENV === 'local') {
@@ -16,5 +16,5 @@ export default class Config {
     }
 
     return config.values;
-  }
-}
+  },
+};

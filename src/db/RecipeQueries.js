@@ -3,16 +3,12 @@
 /**
  * Database queries - Recipe
  */
-import AWS from 'aws-sdk';
+const AWS = require('aws-sdk');
+const { load } = require('../Config');
 
-export default class RecipeQueries {
-  /**
-   * @param {object} configuration values
-   */
-  constructor(config) {
-    this.docClient = new AWS.DynamoDB.DocumentClient(config.dynamodb);
-  }
+const dynamodb = load().dynamodb;
 
+module.exports = {
   /**
    * Returns if cookbook has any associated recipes
    * @param  {string}  title
@@ -20,9 +16,10 @@ export default class RecipeQueries {
    */
   hasRecipes(title) {
     return new Promise((resolve) => {
-      const params = RecipeQueries.getRecipesByCookbookParams(title);
+      const params = this.getRecipesByCookbookParams(title);
 
-      this.docClient.query(params, (err, data) => {
+      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+      db.query(params, (err, data) => {
         if (err) {
           console.error(err);
           return resolve(err);
@@ -35,7 +32,7 @@ export default class RecipeQueries {
         return resolve(false);
       });
     });
-  }
+  },
 
   /**
    * Returns all recipes by cookbook
@@ -44,9 +41,10 @@ export default class RecipeQueries {
    */
   getAllByCookbook(cookbook) {
     return new Promise((resolve) => {
-      const params = RecipeQueries.getRecipesByCookbookParams(cookbook);
+      const params = this.getRecipesByCookbookParams(cookbook);
 
-      this.docClient.query(params, (err, data) => {
+      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+      db.query(params, (err, data) => {
         if (err) {
           console.error(err);
           return resolve([]);
@@ -55,14 +53,14 @@ export default class RecipeQueries {
         return resolve(data.Items || []);
       });
     });
-  }
+  },
 
   /**
    * Returns params to get recipes by cookbook
    * @param  {string} cookbook
    * @return {object}
    */
-  static getRecipesByCookbookParams(cookbook) {
+  getRecipesByCookbookParams(cookbook) {
     const params = {
       TableName: 'Recipe',
       KeyConditionExpression: 'Cookbook = :cookbook',
@@ -72,5 +70,5 @@ export default class RecipeQueries {
     };
 
     return params;
-  }
-}
+  },
+};

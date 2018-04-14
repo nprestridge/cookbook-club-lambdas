@@ -1,12 +1,10 @@
-import chai from 'chai';
-import sinon from 'sinon';
-import Config from '../../src/Config';
-import CookbookController from '../../src/CookbookController';
+const chai = require('chai');
+const sinon = require('sinon');
+const CookbookController = require('../../src/CookbookController');
+const CookbookQueries = require('../../src/db/CookbookQueries');
+const RecipeQueries = require('../../src/db/RecipeQueries');
 
 const assert = chai.assert;
-
-const config = Config.load();
-const controller = new CookbookController(config);
 
 describe('src/CookbookController', () => {
   const sandbox = sinon.sandbox.create();
@@ -124,14 +122,14 @@ describe('src/CookbookController', () => {
 
   describe('create', () => {
     it('should return error message if no event', async () => {
-      const error = await controller.create();
+      const error = await CookbookController.create();
       assert.equal(error, 'No details entered!');
     });
 
     it('should return error message if no event params', async () => {
       const event = {};
 
-      const error = await controller.create(event);
+      const error = await CookbookController.create(event);
       assert.equal(error, 'No details entered!');
     });
 
@@ -140,7 +138,7 @@ describe('src/CookbookController', () => {
         params: {},
       };
 
-      const error = await controller.create(event);
+      const error = await CookbookController.create(event);
       assert.equal(error, 'No details entered!');
     });
 
@@ -154,11 +152,11 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'update');
+      sandbox.stub(CookbookQueries, 'update');
 
       // Update should not be called.  Should return validation errors.
-      const errors = await controller.create(event);
-      assert.equal(controller.cookbooks.update.callCount, 0);
+      const errors = await CookbookController.create(event);
+      assert.equal(CookbookQueries.update.callCount, 0);
       assert.isArray(errors);
       assert.equal(errors.length, 2);
     });
@@ -178,13 +176,13 @@ describe('src/CookbookController', () => {
         Author: decodeURI(event.params.path.author),
       };
 
-      sandbox.stub(controller.cookbooks, 'update')
+      sandbox.stub(CookbookQueries, 'update')
         .withArgs(item)
         .returns(item);
 
-      const result = await controller.create(event);
+      const result = await CookbookController.create(event);
       assert.deepEqual(result, item);
-      assert.equal(controller.cookbooks.update.callCount, 1);
+      assert.equal(CookbookQueries.update.callCount, 1);
     });
 
     it('should update DB', async () => {
@@ -206,26 +204,26 @@ describe('src/CookbookController', () => {
         Blog: event.params.path.blog,
       };
 
-      sandbox.stub(controller.cookbooks, 'update')
+      sandbox.stub(CookbookQueries, 'update')
         .withArgs(item)
         .returns(item);
 
-      const result = await controller.create(event);
+      const result = await CookbookController.create(event);
       assert.deepEqual(result, item);
-      assert.equal(controller.cookbooks.update.callCount, 1);
+      assert.equal(CookbookQueries.update.callCount, 1);
     });
   });
 
   describe('delete', () => {
     it('should return error message if no event', async () => {
-      const error = await controller.delete();
+      const error = await CookbookController.delete();
       assert.equal(error, 'Error deleting cookbook!');
     });
 
     it('should return error message if no event params', async () => {
       const event = {};
 
-      const error = await controller.delete(event);
+      const error = await CookbookController.delete(event);
       assert.equal(error, 'Error deleting cookbook!');
     });
 
@@ -234,7 +232,7 @@ describe('src/CookbookController', () => {
         params: {},
       };
 
-      const error = await controller.delete(event);
+      const error = await CookbookController.delete(event);
       assert.equal(error, 'Error deleting cookbook!');
     });
 
@@ -248,11 +246,11 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'delete');
+      sandbox.stub(CookbookQueries, 'delete');
 
       // Delete should not be called.  Should return validation errors.
-      const errors = await controller.delete(event);
-      assert.equal(controller.cookbooks.delete.callCount, 0);
+      const errors = await CookbookController.delete(event);
+      assert.equal(CookbookQueries.delete.callCount, 0);
       assert.isArray(errors);
       assert.equal(errors.length, 2);
     });
@@ -270,15 +268,15 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.recipes, 'hasRecipes')
+      sandbox.stub(RecipeQueries, 'hasRecipes')
         .withArgs(title)
         .returns(true);
 
-      sandbox.stub(controller.cookbooks, 'delete');
+      sandbox.stub(CookbookQueries, 'delete');
 
-      const result = await controller.delete(event);
-      assert.equal(controller.recipes.hasRecipes.callCount, 1);
-      assert.equal(controller.cookbooks.delete.callCount, 0);
+      const result = await CookbookController.delete(event);
+      assert.equal(RecipeQueries.hasRecipes.callCount, 1);
+      assert.equal(CookbookQueries.delete.callCount, 0);
       assert.equal(result, 'Cookbook has recipes which cannot be deleted.');
     });
 
@@ -300,38 +298,38 @@ describe('src/CookbookController', () => {
         Author: author,
       };
 
-      sandbox.stub(controller.recipes, 'hasRecipes')
+      sandbox.stub(RecipeQueries, 'hasRecipes')
         .withArgs(title)
         .returns(false);
 
-      sandbox.stub(controller.cookbooks, 'delete')
+      sandbox.stub(CookbookQueries, 'delete')
         .withArgs(title, author)
         .returns(item);
 
-      const result = await controller.delete(event);
+      const result = await CookbookController.delete(event);
       assert.deepEqual(result, item);
-      assert.equal(controller.recipes.hasRecipes.callCount, 1);
-      assert.equal(controller.cookbooks.delete.callCount, 1);
+      assert.equal(RecipeQueries.hasRecipes.callCount, 1);
+      assert.equal(CookbookQueries.delete.callCount, 1);
     });
   });
 
   describe('getAll', () => {
     it('should return empty array if getAll is empty', async () => {
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns([]);
 
-      const result = await controller.getAll();
-      assert.equal(controller.cookbooks.getAll.callCount, 1);
+      const result = await CookbookController.getAll();
+      assert.equal(CookbookQueries.getAll.callCount, 1);
       assert.isArray(result);
       assert.isEmpty(result);
     });
 
     it('should return empty array if getAll is null', async () => {
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(null);
 
-      const result = await controller.getAll();
-      assert.equal(controller.cookbooks.getAll.callCount, 1);
+      const result = await CookbookController.getAll();
+      assert.equal(CookbookQueries.getAll.callCount, 1);
       assert.isArray(result);
       assert.isEmpty(result);
     });
@@ -348,10 +346,10 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(cookbooks);
 
-      const result = await controller.getAll(event);
+      const result = await CookbookController.getAll(event);
       assert.equal(result.length, 2);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook2));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook1));
@@ -371,10 +369,10 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(cookbooks);
 
-      const result = await controller.getAll(event);
+      const result = await CookbookController.getAll(event);
       assert.equal(result.length, 2);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook1));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook2));
@@ -396,10 +394,10 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(cookbooks);
 
-      const result = await controller.getAll(event);
+      const result = await CookbookController.getAll(event);
       assert.equal(result.length, 3);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook2));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook1));
@@ -421,10 +419,10 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(cookbooks);
 
-      const result = await controller.getAll(event);
+      const result = await CookbookController.getAll(event);
       assert.equal(result.length, 2);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook3));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook4));
@@ -447,10 +445,10 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(cookbooks);
 
-      const result = await controller.getAll(event);
+      const result = await CookbookController.getAll(event);
       assert.equal(result.length, 4);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook2));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook1));
@@ -475,10 +473,10 @@ describe('src/CookbookController', () => {
         },
       };
 
-      sandbox.stub(controller.cookbooks, 'getAll')
+      sandbox.stub(CookbookQueries, 'getAll')
         .returns(cookbooks);
 
-      const result = await controller.getAll(event);
+      const result = await CookbookController.getAll(event);
       assert.equal(result.length, 4);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook4));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook3));

@@ -1,18 +1,17 @@
-import chai from 'chai';
-import sinon from 'sinon';
-import Config from '../../src/Config';
-import UserQueries from '../../src/db/UserQueries';
+const chai = require('chai');
+const sinon = require('sinon');
+const awsMock = require('aws-sdk-mock');
+const UserQueries = require('../../src/db/UserQueries');
 
 const assert = chai.assert;
 
-const config = Config.load();
-const query = new UserQueries(config);
-
 describe('src/UserQueries', () => {
   const sandbox = sinon.sandbox.create();
+  const dynamodb = 'DynamoDB.DocumentClient';
 
   // Reset test environment
   afterEach(() => {
+    awsMock.restore(dynamodb);
     sandbox.restore();
   });
 
@@ -37,15 +36,11 @@ describe('src/UserQueries', () => {
         ScannedCount: 2,
       };
 
-      const params = {
-        TableName: 'User',
-      };
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback(null, items);
+      });
 
-      sandbox.stub(query.docClient, 'scan')
-        .withArgs(params)
-        .yields(null, items);
-
-      const map = await query.getEmailMap();
+      const map = await UserQueries.getEmailMap();
       assert.isNotNull(map);
       assert.equal(Object.keys(map).length, 2);
       assert.deepEqual(map[user1.Email], user1);
@@ -53,21 +48,22 @@ describe('src/UserQueries', () => {
     });
 
     it('should return empty map', async () => {
-      sandbox.stub(query.docClient, 'scan')
-        .yields(null, {});
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback(null, {});
+      });
 
-      const map = await query.getEmailMap();
+      const map = await UserQueries.getEmailMap();
       assert.isNotNull(map);
       assert.deepEqual(map, {});
     });
 
     it('should return error', async () => {
       sandbox.stub(console, 'error');
-      sandbox.stub(query.docClient, 'scan')
-        .yields('Test Error', null);
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback('Test Error', null);
+      });
 
-      const result = await query.getEmailMap();
-      assert.equal(query.docClient.scan.callCount, 1);
+      const result = await UserQueries.getEmailMap();
       assert.equal(console.error.callCount, 1);
       assert.equal(result, 'Test Error');
     });

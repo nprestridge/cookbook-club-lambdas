@@ -1,26 +1,23 @@
-import chai from 'chai';
-import sinon from 'sinon';
-import Config from '../../src/Config';
-import RecipeQueries from '../../src/db/RecipeQueries';
+const chai = require('chai');
+const sinon = require('sinon');
+const awsMock = require('aws-sdk-mock');
+const RecipeQueries = require('../../src/db/RecipeQueries');
 
 const assert = chai.assert;
 
-const config = Config.load();
-const query = new RecipeQueries(config);
-
 describe('src/RecipeQueries', () => {
   const sandbox = sinon.sandbox.create();
+  const dynamodb = 'DynamoDB.DocumentClient';
 
   // Reset test environment
   afterEach(() => {
+    awsMock.restore(dynamodb);
     sandbox.restore();
   });
 
   describe('hasRecipes', () => {
     it('should return true if there are recipes', async () => {
       const title = 'Everyday Italian';
-      const params = RecipeQueries.getRecipesByCookbookParams(title);
-
       const items = {
         Items: [
           {
@@ -29,26 +26,22 @@ describe('src/RecipeQueries', () => {
         ],
       };
 
+      awsMock.mock(dynamodb, 'query', (params, callback) => {
+        callback(null, items);
+      });
 
-      sandbox.stub(query.docClient, 'query')
-        .withArgs(params)
-        .yields(null, items);
-
-      const result = await query.hasRecipes(title);
-      assert.equal(query.docClient.query.callCount, 1);
+      const result = await RecipeQueries.hasRecipes(title);
       assert.isTrue(result);
     });
 
     it('should return false if there are no associated recipes', async () => {
       const title = 'Everyday Italian';
-      const params = RecipeQueries.getRecipesByCookbookParams(title);
 
-      sandbox.stub(query.docClient, 'query')
-        .withArgs(params)
-        .yields(null, {});
+      awsMock.mock(dynamodb, 'query', (params, callback) => {
+        callback(null, {});
+      });
 
-      const result = await query.hasRecipes(title);
-      assert.equal(query.docClient.query.callCount, 1);
+      const result = await RecipeQueries.hasRecipes(title);
       assert.isFalse(result);
     });
 
@@ -56,11 +49,11 @@ describe('src/RecipeQueries', () => {
       const title = 'Everyday Italian';
 
       sandbox.stub(console, 'error');
-      sandbox.stub(query.docClient, 'query')
-        .yields('Query Error', null);
+      awsMock.mock(dynamodb, 'query', (params, callback) => {
+        callback('Query Error', null);
+      });
 
-      const result = await query.hasRecipes(title);
-      assert.equal(query.docClient.query.callCount, 1);
+      const result = await RecipeQueries.hasRecipes(title);
       assert.equal(console.error.callCount, 1);
       assert.equal(result, 'Query Error');
     });
@@ -69,7 +62,6 @@ describe('src/RecipeQueries', () => {
   describe('getAllByCookbook', () => {
     it('should return recipes', async () => {
       const title = 'Everyday Italian';
-      const params = RecipeQueries.getRecipesByCookbookParams(title);
 
       const items = {
         Items: [
@@ -79,40 +71,35 @@ describe('src/RecipeQueries', () => {
         ],
       };
 
-      sandbox.stub(query.docClient, 'query')
-        .withArgs(params)
-        .yields(null, items);
+      awsMock.mock(dynamodb, 'query', (params, callback) => {
+        callback(null, items);
+      });
 
-      const result = await query.getAllByCookbook(title);
-      assert.equal(query.docClient.query.callCount, 1);
+      const result = await RecipeQueries.getAllByCookbook(title);
       assert.deepEqual(result, items.Items);
     });
 
     it('should return empty array if no recipes', async () => {
       const title = 'Everyday Italian';
-      const params = RecipeQueries.getRecipesByCookbookParams(title);
 
-      sandbox.stub(query.docClient, 'query')
-        .withArgs(params)
-        .yields(null, {});
+      awsMock.mock(dynamodb, 'query', (params, callback) => {
+        callback(null, {});
+      });
 
-      const result = await query.getAllByCookbook(title);
-      assert.equal(query.docClient.query.callCount, 1);
+      const result = await RecipeQueries.getAllByCookbook(title);
       assert.deepEqual(result, []);
     });
 
     it('should return empty array if error', async () => {
       const title = 'Everyday Italian';
-      const params = RecipeQueries.getRecipesByCookbookParams(title);
 
       sandbox.stub(console, 'error');
-      sandbox.stub(query.docClient, 'query')
-        .withArgs(params)
-        .yields('Recipes Error', null);
+      awsMock.mock(dynamodb, 'query', (params, callback) => {
+        callback('Recipes Error', null);
+      });
 
-      const result = await query.getAllByCookbook(title);
+      const result = await RecipeQueries.getAllByCookbook(title);
       assert.equal(console.error.callCount, 1);
-      assert.equal(query.docClient.query.callCount, 1);
       assert.deepEqual(result, []);
     });
   });

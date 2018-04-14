@@ -6,14 +6,14 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "mock:create-cookbook": "ENV=local babel-node mock/create-cookbook/run.js",
-    "mock:delete-cookbook": "ENV=local babel-node mock/delete-cookbook/run.js",
-    "mock:get-cookbooks": "ENV=local babel-node mock/get-cookbooks/run.js",
-    "mock:get-cookbook-recipes": "ENV=local babel-node mock/get-cookbook-recipes/run.js",
+    "mock:create-cookbook": "ENV=local node mock/create-cookbook/run.js",
+    "mock:delete-cookbook": "ENV=local node mock/delete-cookbook/run.js",
+    "mock:get-cookbooks": "ENV=local node mock/get-cookbooks/run.js",
+    "mock:get-cookbook-recipes": "ENV=local node mock/get-cookbook-recipes/run.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:install",
     "package": "npm run build && npm run package:zip",
     "lint": "./node_modules/.bin/eslint *.js src/** mock/**.js",
-    "test": "npm run lint && NODE_ENV=test nyc mocha --recursive test/ -t 12000 --require babel-core/register && npm run test:coverage",
+    "test": "npm run lint && NODE_ENV=test nyc mocha --recursive test/ -t 12000 && npm run test:coverage",
     "test:report": "nyc report --reporter=text --all",
     "test:coverage": "nyc check-coverage --lines 100 --functions 100 --branches 100",
     "build:compile": "babel src -d dist/src -D && babel index.js -d dist -D",
@@ -23,12 +23,16 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=8.10.0"
+  },
   "dependencies": {
     "aws-sdk": "^2.27.0",
     "babel-runtime": "^6.23.0",
     "moment": "^2.19.3"
   },
   "devDependencies": {
+    "aws-sdk-mock": "^1.7.0",
     "babel-cli": "^6.23.0",
     "babel-core": "^6.23.1",
     "babel-plugin-transform-runtime": "^6.23.0",

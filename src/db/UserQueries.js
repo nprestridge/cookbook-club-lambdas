@@ -3,16 +3,12 @@
 /**
  * Database queries - User
  */
-import AWS from 'aws-sdk';
+const AWS = require('aws-sdk');
+const { load } = require('../Config');
 
-export default class UserQueries {
-  /**
-   * @param {object} configuration values
-   */
-  constructor(config) {
-    this.docClient = new AWS.DynamoDB.DocumentClient(config.dynamodb);
-  }
+const dynamodb = load().dynamodb;
 
+module.exports = {
   /**
    * Returns a user map of key (email) -> user data
    * @return {Promise}
@@ -23,7 +19,8 @@ export default class UserQueries {
     };
 
     return new Promise((resolve) => {
-      this.docClient.scan(params, (err, data) => {
+      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+      db.scan(params, (err, data) => {
         if (err) {
           console.error(err);
           return resolve(err);
@@ -38,5 +35,5 @@ export default class UserQueries {
         return resolve(map);
       });
     });
-  }
-}
+  },
+};

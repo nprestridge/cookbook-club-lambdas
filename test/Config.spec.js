@@ -1,8 +1,8 @@
-import chai from 'chai';
-import Config from '../src/Config';
+const chai = require('chai');
+const Config = require('../src/Config');
 
-import local from '../src/config/local';
-import production from '../src/config/production';
+const local = require('../src/config/local');
+const production = require('../src/config/production');
 
 const assert = chai.assert;
 

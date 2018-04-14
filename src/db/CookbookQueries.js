@@ -3,16 +3,12 @@
 /**
  * Database queries - Cookbook
  */
-import AWS from 'aws-sdk';
+const AWS = require('aws-sdk');
+const { load } = require('../Config');
 
-export default class CookbookQueries {
-  /**
-   * @param {object} configuration values
-   */
-  constructor(config) {
-    this.docClient = new AWS.DynamoDB.DocumentClient(config.dynamodb);
-  }
+const dynamodb = load().dynamodb;
 
+module.exports = {
   /**
    * Update Cookbook
    * @param  {Object} item Title, Author, MeetingDate (optional), Blog (optional)
@@ -25,7 +21,8 @@ export default class CookbookQueries {
         Item: item,
       };
 
-      this.docClient.put(params, (err) => {
+      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+      db.put(params, (err) => {
         if (err) {
           console.error(err);
           return resolve(err);
@@ -34,7 +31,7 @@ export default class CookbookQueries {
         return resolve('Success');
       });
     });
-  }
+  },
 
   /**
    * Delete cookbooks
@@ -52,7 +49,8 @@ export default class CookbookQueries {
         },
       };
 
-      this.docClient.delete(params, (err) => {
+      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+      db.delete(params, (err) => {
         if (err) {
           console.error(err);
           return resolve(err);
@@ -60,26 +58,26 @@ export default class CookbookQueries {
         return resolve('Success');
       });
     });
-  }
+  },
 
   /**
    * Returns all cookbooks
-   * @return {Promise}
+   * @return list of cookbooks
    */
-  getAll() {
-    return new Promise((resolve) => {
-      const params = {
-        TableName: 'Cookbook',
-      };
+  async getAll() {
+    const params = {
+      TableName: 'Cookbook',
+    };
 
-      this.docClient.scan(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve([]);
-        }
+    const db = new AWS.DynamoDB.DocumentClient(dynamodb);
 
-        return resolve(data.Items || []);
-      });
-    });
-  }
-}
+    try {
+      const data = await db.scan(params).promise();
+      return data.Items || [];
+    } catch (err) {
+      console.error(err);
+    }
+
+    return [];
+  },
+};

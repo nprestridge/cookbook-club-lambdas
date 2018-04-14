@@ -1,16 +1,8 @@
-import moment from 'moment';
-import CookbookQueries from './db/CookbookQueries';
-import RecipeQueries from './db/RecipeQueries';
+const moment = require('moment');
+const CookbookQueries = require('./db/CookbookQueries');
+const RecipeQueries = require('./db/RecipeQueries');
 
-export default class CookbookController {
-  /**
-   * @param {object} configuration values
-   */
-  constructor(config) {
-    this.cookbooks = new CookbookQueries(config);
-    this.recipes = new RecipeQueries(config);
-  }
-
+module.exports = {
   /**
    * Check if cookbook fields are valid
    * @param  {string} title
@@ -18,7 +10,7 @@ export default class CookbookController {
    * @param  {string} date
    * @return {string}        Returns error message if validation fails
    */
-  static validateCookbook(title, author, date) {
+  validateCookbook(title, author, date) {
     const validationError = [];
 
     if (!title) {
@@ -34,14 +26,14 @@ export default class CookbookController {
     }
 
     return (validationError.length > 0) ? validationError : null;
-  }
+  },
 
   /**
    * Returns API JSON for DynamoDB cookbook item
    * @param  {object} item  DynamoDB object
    * @return {object}       JSON to return
    */
-  static formatCookbookJSON(item) {
+  formatCookbookJSON(item) {
     if (!item) {
       return null;
     }
@@ -70,7 +62,7 @@ export default class CookbookController {
     }
 
     return formattedResult;
-  }
+  },
 
   /**
    * Create/update a cookbook
@@ -87,7 +79,7 @@ export default class CookbookController {
       const blog = event.params.path.blog;
 
       // Check required fields are entered
-      const validationError = CookbookController.validateCookbook(title, author, meetingDate);
+      const validationError = this.validateCookbook(title, author, meetingDate);
 
       if (validationError) {
         return validationError;
@@ -107,11 +99,11 @@ export default class CookbookController {
         item.Blog = blog;
       }
 
-      return this.cookbooks.update(item);
+      return CookbookQueries.update(item);
     }
 
     return 'No details entered!';
-  }
+  },
 
   /**
    * Delete a cookbook
@@ -126,7 +118,7 @@ export default class CookbookController {
       let author = event.params.path.author;
 
       // Check required fields are entered
-      const validationError = CookbookController.validateCookbook(title, author);
+      const validationError = this.validateCookbook(title, author);
 
       if (validationError) {
         return validationError;
@@ -136,16 +128,16 @@ export default class CookbookController {
       title = decodeURI(title);
       author = decodeURI(author);
 
-      const hasRecipes = await this.recipes.hasRecipes(title);
+      const hasRecipes = await RecipeQueries.hasRecipes(title);
       if (!hasRecipes) {
-        return this.cookbooks.delete(title, author);
+        return CookbookQueries.delete(title, author);
       }
 
       return 'Cookbook has recipes which cannot be deleted.';
     }
 
     return 'Error deleting cookbook!';
-  }
+  },
 
   /**
    * Get list of cookbooks
@@ -155,7 +147,7 @@ export default class CookbookController {
     const response = [];
 
     // retrieve cookbooks
-    const items = await this.cookbooks.getAll();
+    const items = await CookbookQueries.getAll();
 
     if (!items) {
       return response;
@@ -163,7 +155,7 @@ export default class CookbookController {
 
     // format cookbooks
     items.forEach((element) => {
-      response.push(CookbookController.formatCookbookJSON(element));
+      response.push(this.formatCookbookJSON(element));
     });
 
     // determine sort type
@@ -204,5 +196,5 @@ export default class CookbookController {
     }
 
     return response;
-  }
-}
+  },
+};

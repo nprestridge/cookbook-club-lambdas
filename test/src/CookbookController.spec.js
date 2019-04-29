@@ -14,7 +14,7 @@ describe('src/CookbookController', () => {
     Author: 'Author D',
     Blog: 'http://blog.com',
     AmazonLink: 'http://amazon.com/book1',
-    MeetingDate: '12/1/2017',
+    MeetingDate: '2017-12-01',
     Thumbnail: 'http://thumbnail.com',
   };
 
@@ -22,7 +22,7 @@ describe('src/CookbookController', () => {
     Title: 'Title B',
     Author: 'Author C',
     AmazonLink: 'http://amazon.com/book2',
-    MeetingDate: '12/1/2018',
+    MeetingDate: '2018-12-01',
   };
 
   const cookbook3 = {
@@ -94,7 +94,7 @@ describe('src/CookbookController', () => {
         blog: cookbook1.Blog,
         amazon: cookbook1.AmazonLink,
         isoDate: cookbook1.MeetingDate,
-        displayDate: new Date(cookbook1.MeetingDate).toLocaleDateString(),
+        displayDate: '12/1/2017',
         thumbnail: cookbook1.Thumbnail,
       };
 

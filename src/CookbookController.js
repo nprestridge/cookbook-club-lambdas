@@ -50,7 +50,7 @@ module.exports = {
     if (item.MeetingDate) {
       const meetingDate = item.MeetingDate;
       formattedResult.isoDate = meetingDate;
-      formattedResult.displayDate = new Date(meetingDate).toLocaleDateString();
+      formattedResult.displayDate = moment(meetingDate).format('M/D/YYYY');
     }
 
     if (item.Thumbnail) {

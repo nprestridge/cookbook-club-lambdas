@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const RecipeController = require('../../src/RecipeController');
 const RecipeQueries = require('../../src/db/RecipeQueries');
+const ConfigQueries = require('../../src/db/ConfigQueries');
 const UserQueries = require('../../src/db/UserQueries');
 
 const assert = chai.assert;
@@ -15,6 +16,7 @@ describe('src/RecipeController', () => {
     Page: '123',
     Link: 'http://recipes.com/1',
     UserEmail: 'user@email.com',
+    Image: 'recipe_1.jpg',
   };
 
   const recipe2 = {
@@ -27,6 +29,11 @@ describe('src/RecipeController', () => {
   const recipe3 = {
     Cookbook: 'Cookbook A',
     Name: 'Recipe 3',
+  };
+
+  const recipeBaseUrl = 'http://base-url.com/test/';
+  const settingsMap = {
+    RecipeBaseUrl: recipeBaseUrl
   };
 
   const userMap = {
@@ -54,26 +61,27 @@ describe('src/RecipeController', () => {
         page: recipe1.Page,
         link: recipe1.Link,
         cook: userMap[recipe1.UserEmail].FirstName,
+        image: `${settingsMap.RecipeBaseUrl}${recipe1.Image}`,
       };
 
-      const result = RecipeController.formatRecipeJSON(recipe1, userMap);
+      const result = RecipeController.formatRecipeJSON(recipe1, recipeBaseUrl, userMap);
       assert.deepEqual(result, expected);
     });
 
     it('should return JSON with user', () => {
       const expectedCook = userMap[recipe1.UserEmail].FirstName;
 
-      const result = RecipeController.formatRecipeJSON(recipe1, userMap);
+      const result = RecipeController.formatRecipeJSON(recipe1, recipeBaseUrl, userMap);
       assert.equal(result.cook, expectedCook);
     });
 
     it('should return JSON with no user', () => {
-      const result = RecipeController.formatRecipeJSON(recipe3, userMap);
+      const result = RecipeController.formatRecipeJSON(recipe3, recipeBaseUrl, userMap);
       assert.isUndefined(result.cook);
     });
 
     it('should return JSON with invalid user', () => {
-      const result = RecipeController.formatRecipeJSON(recipe2, userMap);
+      const result = RecipeController.formatRecipeJSON(recipe2, recipeBaseUrl, userMap);
       assert.isUndefined(result.cook);
     });
 
@@ -161,14 +169,20 @@ describe('src/RecipeController', () => {
         .withArgs(decodeURI(title))
         .returns(recipes);
 
+      sandbox.stub(ConfigQueries, 'getSettings')
+        .returns(settingsMap);
+
       sandbox.stub(UserQueries, 'getEmailMap')
         .returns(userMap);
 
       const result = await RecipeController.getByCookbook(event);
       assert.isArray(result);
-      assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1, userMap));
-      assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2, userMap));
-      assert.deepEqual(result[2], RecipeController.formatRecipeJSON(recipe3, userMap));
+      assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1,
+        recipeBaseUrl, userMap));
+      assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2,
+        recipeBaseUrl, userMap));
+      assert.deepEqual(result[2], RecipeController.formatRecipeJSON(recipe3,
+        recipeBaseUrl, userMap));
     });
   });
 });

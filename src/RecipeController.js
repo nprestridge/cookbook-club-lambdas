@@ -1,14 +1,16 @@
+const ConfigQueries = require('./db/ConfigQueries');
 const RecipeQueries = require('./db/RecipeQueries');
 const UserQueries = require('./db/UserQueries');
 
 module.exports = {
   /**
    * Returns API JSON for DynamoDB recipe item
-   * @param  {object} item    DynamoDB object
-   * @param  {object} users   Users map
-   * @return {object}         JSON to return
+   * @param  {object} item            DynamoDB object
+   * @param  {object} recipeBaseUrl   Recipe base url
+   * @param  {object} users           Users map
+   * @return {object}                 JSON to return
    */
-  formatRecipeJSON(item, users) {
+  formatRecipeJSON(item, recipeBaseUrl, users) {
     if (!item) {
       return null;
     }
@@ -18,6 +20,7 @@ module.exports = {
       name: item.Name,
       page: item.Page,
       link: item.Link,
+      image: item.Image ? `${recipeBaseUrl}${item.Image}` : null,
     };
 
     // Add user info
@@ -54,11 +57,14 @@ module.exports = {
     const items = await RecipeQueries.getAllByCookbook(cookbook);
 
     if (items && items.length > 0) {
+      const settings = await ConfigQueries.getSettings();
+      const recipeBaseUrl = settings.RecipeBaseUrl;
+
       const users = await UserQueries.getEmailMap();
 
       // format JSON
       items.forEach((element) => {
-        const json = this.formatRecipeJSON(element, users);
+        const json = this.formatRecipeJSON(element, recipeBaseUrl, users);
         response.push(json);
       });
     }

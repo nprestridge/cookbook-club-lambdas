@@ -8,7 +8,6 @@ jobs:
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
       - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
-        command: /sbin/init
     steps:
       - checkout
       - run:
@@ -16,7 +15,7 @@ jobs:
           command: echo ${CIRCLE_BRANCH}
       # Prepare for artifact and test results collection - https://circleci.com/docs/2.0/artifacts/
       - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
-      - run: nvm install 8.10 && nvm alias default 8.10
+      - run: nvm install 12.13.1 && nvm alias default 12.13.1
       # Restore local dependencies from cache
       - restore_cache:
           keys:

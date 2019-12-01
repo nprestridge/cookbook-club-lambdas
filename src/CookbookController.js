@@ -184,6 +184,8 @@ module.exports = {
       response.sort((a, b) => {
         if (!a.isoDate && b.isoDate) {
           return 1;
+        } else if (a.isoDate && !b.isoDate) {
+          return -1;
         } else if (!a.isoDate && !b.isoDate) {
           // If no date on both, sort by title asc
           return (a.title).localeCompare(b.title);

@@ -383,6 +383,7 @@ describe('src/CookbookController', () => {
         cookbook3,
         cookbook1,
         cookbook2,
+        cookbook4,
       ];
 
       const event = {
@@ -398,10 +399,11 @@ describe('src/CookbookController', () => {
         .returns(cookbooks);
 
       const result = await CookbookController.getAll(event);
-      assert.equal(result.length, 3);
+      assert.equal(result.length, 4);
       assert.deepEqual(result[0], CookbookController.formatCookbookJSON(cookbook2));
       assert.deepEqual(result[1], CookbookController.formatCookbookJSON(cookbook1));
       assert.deepEqual(result[2], CookbookController.formatCookbookJSON(cookbook3));
+      assert.deepEqual(result[3], CookbookController.formatCookbookJSON(cookbook4));
     });
 
     it('should return results without date at end by title asc', async () => {

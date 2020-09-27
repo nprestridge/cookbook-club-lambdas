@@ -55,6 +55,7 @@ jobs:
         - run: aws lambda update-function-code --function-name delete-cookbook --zip-file fileb://package.zip --region ${REGION}
         - run: aws lambda update-function-code --function-name get-cookbooks --zip-file fileb://package.zip --region ${REGION}
         - run: aws lambda update-function-code --function-name get-recipes-by-cookbook --zip-file fileb://package.zip --region ${REGION}
+        - run: aws lambda update-function-code --function-name get-recipes --zip-file fileb://package.zip --region ${REGION}
 
 workflows:
   version: 2

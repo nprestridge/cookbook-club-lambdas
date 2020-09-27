@@ -185,4 +185,55 @@ describe('src/RecipeController', () => {
         recipeBaseUrl, userMap));
     });
   });
+
+  describe('getAll', async() => {
+    const event = {
+      params: {
+        path: {
+        },
+      },
+    };
+
+    it('should return empty array if getAll is empty', async () => {
+      sandbox.stub(RecipeQueries, 'getAll')
+        .returns([]);
+
+      const result = await RecipeController.getAll(event);
+      assert.equal(RecipeQueries.getAll.callCount, 1);
+      assert.isArray(result);
+      assert.isEmpty(result);
+    });
+
+    it('should return empty array if getAll is null', async () => {
+      sandbox.stub(RecipeQueries, 'getAll')
+        .returns(null);
+
+      const result = await RecipeController.getAll(event);
+      assert.equal(RecipeQueries.getAll.callCount, 1);
+      assert.isArray(result);
+      assert.isEmpty(result);
+    });
+
+    it('should return list of recipes sorted by Name', async () => {
+      const recipes = [recipe2, recipe1, recipe3];
+
+      sandbox.stub(RecipeQueries, 'getAll')
+        .returns(recipes);
+
+      sandbox.stub(ConfigQueries, 'getSettings')
+        .returns(settingsMap);
+
+      sandbox.stub(UserQueries, 'getEmailMap')
+        .returns(userMap);
+
+      const result = await RecipeController.getAll(event);
+      assert.isArray(result);
+      assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1,
+        recipeBaseUrl, userMap));
+      assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2,
+        recipeBaseUrl, userMap));
+      assert.deepEqual(result[2], RecipeController.formatRecipeJSON(recipe3,
+        recipeBaseUrl, userMap));
+    });
+  });
 });

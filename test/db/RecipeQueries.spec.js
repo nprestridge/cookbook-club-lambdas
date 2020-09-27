@@ -119,4 +119,49 @@ describe('src/RecipeQueries', () => {
       assert.deepEqual(result, expected);
     });
   });
+
+  describe('getAll', () => {
+    it('should return all recipes', async () => {
+      const items = {
+        Items: [
+          {
+            Recipe: 'Name 1',
+          },
+          {
+            Recipe: 'Name 2',
+          },
+          {
+            Recipe: 'Name 3',
+          },
+        ],
+      };
+
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback(null, items);
+      });
+
+      const result = await RecipeQueries.getAll();
+      assert.deepEqual(result, items.Items);
+    });
+
+    it('should return empty array if no recipes', async () => {
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback(null, {});
+      });
+
+      const result = await RecipeQueries.getAll();
+      assert.deepEqual(result, []);
+    });
+
+    it('should return empty array if error', async () => {
+      sandbox.stub(console, 'error');
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback('Recipes Error', null);
+      });
+
+      const result = await RecipeQueries.getAll();
+      assert.equal(console.error.callCount, 1);
+      assert.deepEqual(result, []);
+    });
+  });
 });

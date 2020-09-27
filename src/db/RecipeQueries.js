@@ -71,4 +71,26 @@ module.exports = {
 
     return params;
   },
+
+  /**
+   * Returns all recipes
+   * @return {Promise}
+   */
+  getAll() {
+    return new Promise((resolve) => {
+      const params = {
+        TableName: 'Recipe',
+      };
+
+      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+      db.scan(params, (err, data) => {
+        if (err) {
+          console.error(err);
+          return resolve([]);
+        }
+
+        return resolve(data.Items || []);
+      });
+    });
+  },
 };

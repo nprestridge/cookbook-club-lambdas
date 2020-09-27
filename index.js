@@ -18,6 +18,9 @@ const handlers = {
   getCookbookRecipes: function handler(event) {
     return RecipeController.getByCookbook(event);
   },
+  getRecipes: function handler(event) {
+    return RecipeController.getAll(event);
+  },
 };
 
 module.exports = {
@@ -54,6 +57,10 @@ module.exports = {
 
   async getCookbookRecipes(event, context, callback) {
     await module.exports.execute('getCookbookRecipes', event, context, callback);
+  },
+
+  async getRecipes(event, context, callback) {
+    await module.exports.execute('getRecipes', event, context, callback);
   },
 
 };

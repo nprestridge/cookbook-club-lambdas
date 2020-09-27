@@ -71,4 +71,33 @@ module.exports = {
 
     return response;
   },
+
+  /**
+  * Get all recipes in DynamoDB
+  */
+  async getAll() {
+    const response = [];
+
+    // retrieve recipes
+    const items = await RecipeQueries.getAll();
+
+    if (items && items.length > 0) {
+      const settings = await ConfigQueries.getSettings();
+      const recipeBaseUrl = settings.RecipeBaseUrl;
+
+      const users = await UserQueries.getEmailMap();
+
+      // format JSON
+      items.forEach((element) => {
+        const json = this.formatRecipeJSON(element, recipeBaseUrl, users);
+        response.push(json);
+      });
+
+      // sort by recipe name
+      const sortBy = 'name';
+      response.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+    }
+
+    return response;
+  },
 };

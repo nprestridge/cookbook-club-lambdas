@@ -1,6 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const RecipeController = require('../../src/RecipeController');
+const CookbookQueries = require('../../src/db/CookbookQueries');
 const RecipeQueries = require('../../src/db/RecipeQueries');
 const ConfigQueries = require('../../src/db/ConfigQueries');
 const UserQueries = require('../../src/db/UserQueries');
@@ -31,6 +32,11 @@ describe('src/RecipeController', () => {
     Name: 'Recipe 3',
   };
 
+  const recipe4 = {
+    Cookbook: 'Cookbook B',
+    Name: 'Recipe 4',
+  };
+
   const recipeBaseUrl = 'http://base-url.com/test/';
   const settingsMap = {
     RecipeBaseUrl: recipeBaseUrl
@@ -41,6 +47,22 @@ describe('src/RecipeController', () => {
       FirstName: 'User',
       LastName: 'Name',
     },
+  };
+
+  const cookbooks = [
+    {
+      Title: 'Cookbook A',
+      Author: 'Author A',
+    },
+    {
+      Title: 'Cookbook B',
+      Author: 'Author B',
+    },
+  ];
+
+  const authorsMap = {
+    'Cookbook A': 'Author A',
+    'Cookbook B': 'Author B',
   };
 
   // Reset test environment
@@ -215,7 +237,7 @@ describe('src/RecipeController', () => {
     });
 
     it('should return list of recipes sorted by Name', async () => {
-      const recipes = [recipe2, recipe1, recipe3];
+      const recipes = [recipe2, recipe1, recipe3, recipe4];
 
       sandbox.stub(RecipeQueries, 'getAll')
         .returns(recipes);
@@ -226,14 +248,20 @@ describe('src/RecipeController', () => {
       sandbox.stub(UserQueries, 'getEmailMap')
         .returns(userMap);
 
+      sandbox.stub(CookbookQueries, 'getAll')
+        .returns(cookbooks);
+
       const result = await RecipeController.getAll(event);
       assert.isArray(result);
+      assert.equal(result.length, 4);
       assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1,
-        recipeBaseUrl, userMap));
+        recipeBaseUrl, userMap, authorsMap));
       assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2,
-        recipeBaseUrl, userMap));
+        recipeBaseUrl, userMap, authorsMap));
       assert.deepEqual(result[2], RecipeController.formatRecipeJSON(recipe3,
-        recipeBaseUrl, userMap));
+        recipeBaseUrl, userMap, authorsMap));
+      assert.deepEqual(result[3], RecipeController.formatRecipeJSON(recipe4,
+        recipeBaseUrl, userMap, authorsMap));
     });
   });
 });

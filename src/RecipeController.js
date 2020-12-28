@@ -1,4 +1,5 @@
 const ConfigQueries = require('./db/ConfigQueries');
+const CookbookQueries = require('./db/CookbookQueries');
 const RecipeQueries = require('./db/RecipeQueries');
 const UserQueries = require('./db/UserQueries');
 
@@ -8,9 +9,10 @@ module.exports = {
    * @param  {object} item            DynamoDB object
    * @param  {object} recipeBaseUrl   Recipe base url
    * @param  {object} users           Users map
+   * @param  {object} authors         Cookbook authors map
    * @return {object}                 JSON to return
    */
-  formatRecipeJSON(item, recipeBaseUrl, users) {
+  formatRecipeJSON(item, recipeBaseUrl, users, authors) {
     if (!item) {
       return null;
     }
@@ -27,6 +29,11 @@ module.exports = {
     const userEmail = item.UserEmail;
     if (userEmail && users && users[userEmail]) {
       formattedResult.cook = users[userEmail].FirstName;
+    }
+
+    // Add cookbook author if present
+    if (authors) {
+      formattedResult.author = authors[item.Cookbook];
     }
 
     return formattedResult;
@@ -50,8 +57,6 @@ module.exports = {
       const validationError = 'Select a Cookbook';
       return validationError;
     }
-
-    // TODO:  Get cookbook details
 
     // retrieve recipes
     const items = await RecipeQueries.getAllByCookbook(cookbook);
@@ -87,9 +92,15 @@ module.exports = {
 
       const users = await UserQueries.getEmailMap();
 
+      const cookbooks = await CookbookQueries.getAll();
+      const authors = {};
+      cookbooks.forEach((element) => {
+        authors[element.Title] = element.Author;
+      });
+
       // format JSON
       items.forEach((element) => {
-        const json = this.formatRecipeJSON(element, recipeBaseUrl, users);
+        const json = this.formatRecipeJSON(element, recipeBaseUrl, users, authors);
         response.push(json);
       });
 

@@ -17,27 +17,22 @@
     "test": "npm run lint && NODE_ENV=test nyc mocha --recursive test/ -t 12000 && npm run test:coverage",
     "test:report": "nyc report --reporter=text --all",
     "test:coverage": "nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "build:compile": "babel src -d dist/src -D && babel index.js -d dist -D",
     "build:clean": "rm -rf dist && mkdir dist",
+    "build:compile": "cp -R src dist/src && cp index.js dist",
     "build:install": "cp package.json dist && find dist -name package.json -execdir npm install --production \\;",
     "package:zip": "cd dist && zip -r package.zip . && mv package.zip .. && cd .."
   },
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": ">=12.13.1"
+    "node": ">=14.17.0"
   },
   "dependencies": {
     "aws-sdk": "^2.27.0",
-    "babel-runtime": "^6.23.0",
     "moment": "^2.19.3"
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
-    "babel-cli": "^6.23.0",
-    "babel-core": "^6.23.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-latest": "^6.22.0",
     "chai": "^4.1.2",
     "eslint": "^4.18.2",
     "eslint-config-airbnb-base": "^11.3.1",

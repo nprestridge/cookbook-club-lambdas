@@ -47,19 +47,26 @@ module.exports = {
   */
   async getByCookbook(event) {
     const response = [];
-    let cookbook;
+    let cookbookSlug;
 
     if (event && event.params && event.params.path) {
-      cookbook = decodeURIComponent(event.params.path.title);
+      cookbookSlug = decodeURIComponent(event.params.path.slug);
     }
 
-    if (!cookbook) {
+    if (!cookbookSlug) {
       const validationError = 'Select a Cookbook';
       return validationError;
     }
 
+    // find cookbook
+    let cookbookTitle;
+    const cookbookResult = await CookbookQueries.getCookbookBySlug(cookbookSlug);
+    if (cookbookResult && cookbookResult.length > 0) {
+      cookbookTitle = cookbookResult[0].Title;
+    }
+
     // retrieve recipes
-    const items = await RecipeQueries.getAllByCookbook(cookbook);
+    const items = await RecipeQueries.getAllByCookbook(cookbookTitle);
 
     if (items && items.length > 0) {
       const settings = await ConfigQueries.getSettings();

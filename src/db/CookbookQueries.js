@@ -80,4 +80,26 @@ module.exports = {
 
     return [];
   },
+
+  async getCookbookBySlug(slug) {
+    const params = {
+      TableName: 'Cookbook',
+      FilterExpression: 'Slug = :slug',
+      ExpressionAttributeValues: {
+        ':slug': slug,
+      },
+    };
+
+    const db = new AWS.DynamoDB.DocumentClient(dynamodb);
+
+    try {
+      const data = await db.scan(params).promise();
+      return data.Items || [];
+    } catch (err) {
+      console.error(err);
+    }
+
+    return [];
+  },
+
 };

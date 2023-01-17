@@ -35,13 +35,13 @@ module.exports = {
   },
 
   /**
-   * Returns all recipes by cookbook
-   * @param  {string} cookbook
+   * Returns all recipes by cookbook title
+   * @param  {string} cookbookTitle
    * @return {Promise}
    */
-  getAllByCookbook(cookbook) {
+  getAllByCookbook(cookbookTitle) {
     return new Promise((resolve) => {
-      const params = this.getRecipesByCookbookParams(cookbook);
+      const params = this.getRecipesByCookbookParams(cookbookTitle);
 
       const db = new AWS.DynamoDB.DocumentClient(dynamodb);
       db.query(params, (err, data) => {

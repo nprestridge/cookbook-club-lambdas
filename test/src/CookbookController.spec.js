@@ -12,6 +12,7 @@ describe('src/CookbookController', () => {
   const cookbook1 = {
     Title: 'Title A',
     Author: 'Author D',
+    Slug: 'title-a',
     Blog: 'http://blog.com',
     AmazonLink: 'http://amazon.com/book1',
     MeetingDate: '2017-12-01',
@@ -21,6 +22,7 @@ describe('src/CookbookController', () => {
   const cookbook2 = {
     Title: 'Title B',
     Author: 'Author C',
+    Slug: 'title-b',
     AmazonLink: 'http://amazon.com/book2',
     MeetingDate: '2018-12-01',
   };
@@ -28,11 +30,13 @@ describe('src/CookbookController', () => {
   const cookbook3 = {
     Title: 'A Title',
     Author: 'Author B',
+    Slug: 'title-a',
   };
 
   const cookbook4 = {
     Title: 'B Title',
     Author: 'Author A',
+    Slug: 'title-b',
   };
 
   // Reset test environment
@@ -91,6 +95,7 @@ describe('src/CookbookController', () => {
       const expected = {
         title: cookbook1.Title,
         author: cookbook1.Author,
+        slug: cookbook1.Slug,
         blog: cookbook1.Blog,
         amazon: cookbook1.AmazonLink,
         isoDate: cookbook1.MeetingDate,
@@ -107,11 +112,13 @@ describe('src/CookbookController', () => {
       const cookbook = {
         Title: 'Test Title',
         Author: 'Test Author',
+        Slug: 'test-title',
       };
 
       const expected = {
         title: cookbook.Title,
         author: cookbook.Author,
+        slug: cookbook.Slug,
       };
 
       const result = CookbookController.formatCookbookJSON(cookbook);

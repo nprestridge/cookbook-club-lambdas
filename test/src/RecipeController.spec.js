@@ -53,10 +53,12 @@ describe('src/RecipeController', () => {
     {
       Title: 'Cookbook A',
       Author: 'Author A',
+      Slug: 'cookbook-a',
     },
     {
       Title: 'Cookbook B',
       Author: 'Author B',
+      Slug: 'cookbook-b',
     },
   ];
 
@@ -176,16 +178,25 @@ describe('src/RecipeController', () => {
     });
 
     it('should return list of recipes', async () => {
+      const slug = 'how-easy-is-that';
       const title = 'How Easy is That?';
       const event = {
         params: {
           path: {
-            title,
+            slug,
           },
         },
       };
 
       const recipes = [recipe1, recipe2, recipe3];
+
+      sandbox.stub(CookbookQueries, 'getCookbookBySlug')
+        .withArgs(slug)
+        .returns([
+          {
+            Title: title,
+          },
+        ]);
 
       sandbox.stub(RecipeQueries, 'getAllByCookbook')
         .withArgs(decodeURI(title))

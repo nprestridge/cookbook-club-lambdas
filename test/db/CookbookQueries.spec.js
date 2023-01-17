@@ -113,4 +113,51 @@ describe('src/CookbookQueries', () => {
       assert.deepEqual(result, []);
     });
   });
+
+  describe('getCookbookBySlug', () => {
+    it('should return success', async () => {
+      const cookbook1 = {
+        Title: 'Cookbook 1',
+        Author: 'Author 1',
+        Slug: 'cookbook-1',
+      };
+
+      const items = {
+        Items: [
+          cookbook1,
+        ],
+        Count: 1,
+        ScannedCount: 1,
+      };
+
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback(null, items);
+      });
+
+      const result = await CookbookQueries.getCookbookBySlug('cookbook-1');
+      assert.deepEqual(result, items.Items);
+    });
+
+    it('should return empty array if no items', async () => {
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback(null, {});
+      });
+
+      const result = await CookbookQueries.getCookbookBySlug('');
+      assert.deepEqual(result, []);
+    });
+
+    it('should return empty array if error', async () => {
+      sandbox.stub(console, 'error');
+      awsMock.mock(dynamodb, 'scan', (params, callback) => {
+        callback('Get Error', null);
+      });
+
+      const result = await CookbookQueries.getCookbookBySlug('');
+      assert.equal(console.error.callCount, 1);
+      assert.deepEqual(result, []);
+    });
+  });
+
+
 });

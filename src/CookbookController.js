@@ -41,6 +41,7 @@ module.exports = {
     const formattedResult = {
       title: item.Title,
       author: item.Author,
+      slug: item.Slug,
     };
 
     if (item.Blog) {

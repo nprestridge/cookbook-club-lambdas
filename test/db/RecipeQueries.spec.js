@@ -1,62 +1,23 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const awsMock = require('aws-sdk-mock');
+const { mockClient } = require('aws-sdk-client-mock');
+const { DynamoDBClient, QueryCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const RecipeQueries = require('../../src/db/RecipeQueries');
 
 const assert = chai.assert;
 
 describe('src/RecipeQueries', () => {
-  const sandbox = sinon.sandbox.create();
-  const dynamodb = 'DynamoDB.DocumentClient';
+  let sandbox;
+  let dynamoDBMock;
 
-  // Reset test environment
-  afterEach(() => {
-    awsMock.restore(dynamodb);
-    sandbox.restore();
+  beforeEach(() => {
+    dynamoDBMock = mockClient(DynamoDBClient);
+    sandbox = sinon.sandbox.create();
   });
 
-  describe('hasRecipes', () => {
-    it('should return true if there are recipes', async () => {
-      const title = 'Everyday Italian';
-      const items = {
-        Items: [
-          {
-            Recipe: 'Name 1',
-          },
-        ],
-      };
-
-      awsMock.mock(dynamodb, 'query', (params, callback) => {
-        callback(null, items);
-      });
-
-      const result = await RecipeQueries.hasRecipes(title);
-      assert.isTrue(result);
-    });
-
-    it('should return false if there are no associated recipes', async () => {
-      const title = 'Everyday Italian';
-
-      awsMock.mock(dynamodb, 'query', (params, callback) => {
-        callback(null, {});
-      });
-
-      const result = await RecipeQueries.hasRecipes(title);
-      assert.isFalse(result);
-    });
-
-    it('should return error', async () => {
-      const title = 'Everyday Italian';
-
-      sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'query', (params, callback) => {
-        callback('Query Error', null);
-      });
-
-      const result = await RecipeQueries.hasRecipes(title);
-      assert.equal(console.error.callCount, 1);
-      assert.equal(result, 'Query Error');
-    });
+  afterEach(() => {
+    dynamoDBMock.reset();
+    sandbox.restore();
   });
 
   describe('getAllByCookbook', () => {
@@ -66,14 +27,14 @@ describe('src/RecipeQueries', () => {
       const items = {
         Items: [
           {
-            Recipe: 'Name 1',
+            Recipe: {
+              S: 'Name 1',
+            },
           },
         ],
       };
 
-      awsMock.mock(dynamodb, 'query', (params, callback) => {
-        callback(null, items);
-      });
+      dynamoDBMock.on(QueryCommand).resolves(items);
 
       const result = await RecipeQueries.getAllByCookbook(title);
       assert.deepEqual(result, items.Items);
@@ -82,9 +43,7 @@ describe('src/RecipeQueries', () => {
     it('should return empty array if no recipes', async () => {
       const title = 'Everyday Italian';
 
-      awsMock.mock(dynamodb, 'query', (params, callback) => {
-        callback(null, {});
-      });
+      dynamoDBMock.on(QueryCommand).resolves([]);
 
       const result = await RecipeQueries.getAllByCookbook(title);
       assert.deepEqual(result, []);
@@ -94,29 +53,11 @@ describe('src/RecipeQueries', () => {
       const title = 'Everyday Italian';
 
       sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'query', (params, callback) => {
-        callback('Recipes Error', null);
-      });
+      dynamoDBMock.on(QueryCommand).rejects('Recipes Error');
 
       const result = await RecipeQueries.getAllByCookbook(title);
       assert.equal(console.error.callCount, 1);
       assert.deepEqual(result, []);
-    });
-  });
-
-  describe('getRecipesByCookbookParams', () => {
-    it('should return query params', () => {
-      const title = 'Everyday Italian';
-      const expected = {
-        TableName: 'Recipe',
-        KeyConditionExpression: 'Cookbook = :cookbook',
-        ExpressionAttributeValues: {
-          ':cookbook': title,
-        },
-      };
-
-      const result = RecipeQueries.getRecipesByCookbookParams(title);
-      assert.deepEqual(result, expected);
     });
   });
 
@@ -125,29 +66,31 @@ describe('src/RecipeQueries', () => {
       const items = {
         Items: [
           {
-            Recipe: 'Name 1',
+            Recipe: {
+              S: 'Name 1',
+            },
           },
           {
-            Recipe: 'Name 2',
+            Recipe: {
+              S: 'Name 2',
+            },
           },
           {
-            Recipe: 'Name 3',
+            Recipe: {
+              S: 'Name 3',
+            },
           },
         ],
       };
 
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback(null, items);
-      });
+      dynamoDBMock.on(ScanCommand).resolves(items);
 
       const result = await RecipeQueries.getAll();
       assert.deepEqual(result, items.Items);
     });
 
     it('should return empty array if no recipes', async () => {
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback(null, {});
-      });
+      dynamoDBMock.on(ScanCommand).resolves({});
 
       const result = await RecipeQueries.getAll();
       assert.deepEqual(result, []);
@@ -155,9 +98,7 @@ describe('src/RecipeQueries', () => {
 
     it('should return empty array if error', async () => {
       sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback('Recipes Error', null);
-      });
+      dynamoDBMock.on(ScanCommand).rejects('Recipes Error');
 
       const result = await RecipeQueries.getAll();
       assert.equal(console.error.callCount, 1);

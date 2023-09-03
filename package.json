@@ -6,8 +6,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "mock:create-cookbook": "ENV=local node mock/create-cookbook/run.js",
-    "mock:delete-cookbook": "ENV=local node mock/delete-cookbook/run.js",
     "mock:get-cookbooks": "ENV=local node mock/get-cookbooks/run.js",
     "mock:get-cookbook-recipes": "ENV=local node mock/get-cookbook-recipes/run.js",
     "mock:get-recipes": "ENV=local node mock/get-recipes/run.js",
@@ -25,19 +23,19 @@
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": ">=14.17.0"
+    "node": ">=18.17.1"
   },
   "dependencies": {
-    "aws-sdk": "^2.27.0",
+    "@aws-sdk/client-dynamodb": "^3.405.0",
     "moment": "^2.19.3"
   },
   "devDependencies": {
-    "aws-sdk-mock": "^1.7.0",
+    "aws-sdk-client-mock": "^3.0.0",
     "chai": "^4.1.2",
-    "eslint": "^4.18.2",
-    "eslint-config-airbnb-base": "^11.3.1",
-    "eslint-plugin-import": "^2.7.0",
-    "mocha": "^4.1.0",
+    "eslint": "^8.51.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.28.1",
+    "mocha": "^10.2.0",
     "nyc": "^14.1.1",
     "sinon": "^4.1.3"
   }

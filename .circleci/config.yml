@@ -1,37 +1,36 @@
-version: 2
+version: 2.1
+orbs:
+  node: circleci/node@5.1.0
 jobs:
   build:
+    executor: node/default
     parallelism: 1
     shell: /bin/bash --login
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
-      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
+      - image: cimg/base:stable
     steps:
       - checkout
+      - node/install:
+          node-version: '18.17.1'
       - run:
           name: Show current branch
           command: echo ${CIRCLE_BRANCH}
       # Prepare for artifact and test results collection - https://circleci.com/docs/2.0/artifacts/
       - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
-      - run: nvm install 14.17.0 && nvm alias default 14.17.0
-      # Restore local dependencies from cache
-      - restore_cache:
-          keys:
-          - v1-dep-{{ .Branch }}-
-          - v1-dep-master-
-          - v1-dep-
       - run: /bin/bash .circleci/set-configs.sh
-      - run: if [ -z "${NODE_ENV:-}" ]; then export NODE_ENV=test; fi
-      - run: npm install
-       # Cache local dependencies if they don't exist
-      - save_cache:
-          key: v1-dep-{{ .Branch }}-{{ epoch }}
-          paths:
-          - ./node_modules
-      - run: npm run test
-      - run: npm run package
+      - node/install-packages:
+          pkg-manager: npm
+          with-cache: true
+          include-branch-in-cache-key: true
+      - run:
+          command: npm run test
+          nane: Run tests
+      - run:
+          command: npm run package
+          name: Package app
       - persist_to_workspace:
             root: ./
             paths:

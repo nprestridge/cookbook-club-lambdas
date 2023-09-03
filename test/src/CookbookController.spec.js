@@ -10,75 +10,61 @@ describe('src/CookbookController', () => {
   const sandbox = sinon.sandbox.create();
 
   const cookbook1 = {
-    Title: 'Title A',
-    Author: 'Author D',
-    Blog: 'http://blog.com',
-    AmazonLink: 'http://amazon.com/book1',
-    MeetingDate: '2017-12-01',
-    Thumbnail: 'http://thumbnail.com',
+    Title: {
+      S: 'Title A',
+    },
+    Author: {
+      S: 'Author D',
+    },
+    Blog: {
+      S: 'http://blog.com',
+    },
+    AmazonLink: {
+      S: 'http://amazon.com/book1',
+    },
+    MeetingDate: {
+      S: '2017-12-01'
+    },
+    Thumbnail: {
+      S: 'http://thumbnail.com',
+    },
   };
 
   const cookbook2 = {
-    Title: 'Title B',
-    Author: 'Author C',
-    AmazonLink: 'http://amazon.com/book2',
-    MeetingDate: '2018-12-01',
+    Title: {
+      S: 'Title B',
+    },
+    Author: {
+      S: 'Author C',
+    },
+    AmazonLink: {
+      S: 'http://amazon.com/book2'
+    },
+    MeetingDate: {
+      S: '2018-12-01',
+    },
   };
 
   const cookbook3 = {
-    Title: 'A Title',
-    Author: 'Author B',
+    Title: {
+      S: 'A Title',
+    },
+    Author: {
+      S: 'Author B',
+    },
   };
 
   const cookbook4 = {
-    Title: 'B Title',
-    Author: 'Author A',
+    Title: {
+      S: 'B Title',
+    },
+    Author: {
+      S: 'Author A',
+    },
   };
 
-  // Reset test environment
   afterEach(() => {
     sandbox.restore();
-  });
-
-  describe('validateCookbook', () => {
-    it('should pass validation', () => {
-      const errors = CookbookController.validateCookbook('title', 'author', '2018-01-31');
-      assert.isNull(errors);
-    });
-
-    it('should require title', () => {
-      const errors = CookbookController.validateCookbook(null, 'author');
-      assert.isNotNull(errors);
-      assert.equal(errors.length, 1);
-      assert.equal(errors[0], 'Enter a title');
-    });
-
-    it('should require author', () => {
-      const errors = CookbookController.validateCookbook('title');
-      assert.isNotNull(errors);
-      assert.equal(errors.length, 1);
-      assert.equal(errors[0], 'Enter an author');
-    });
-
-    it('should require date in correct format', () => {
-      const date = '01/31/2018';
-
-      const errors = CookbookController.validateCookbook('title', 'author', date);
-      assert.isNotNull(errors);
-      assert.equal(errors.length, 1);
-      assert.equal(errors[0], `Date ${date} is not in YYYY-MM-DD format`);
-    });
-
-    it('should return multiple errors', () => {
-      const date = '01/31/2018';
-
-      const errors = CookbookController.validateCookbook('', '', date);
-      assert.isNotNull(errors);
-      assert.equal(errors.length, 3);
-      assert.equal(errors[0], 'Enter a title');
-      assert.equal(errors[1], 'Enter an author');
-      assert.equal(errors[2], `Date ${date} is not in YYYY-MM-DD format`);
-    });
   });
 
   describe('formatCookbookJSON', () => {
@@ -89,13 +75,13 @@ describe('src/CookbookController', () => {
 
     it('should return formatCookbookJSON', () => {
       const expected = {
-        title: cookbook1.Title,
-        author: cookbook1.Author,
-        blog: cookbook1.Blog,
-        amazon: cookbook1.AmazonLink,
-        isoDate: cookbook1.MeetingDate,
+        title: cookbook1.Title.S,
+        author: cookbook1.Author.S,
+        blog: cookbook1.Blog.S,
+        amazon: cookbook1.AmazonLink.S,
+        isoDate: cookbook1.MeetingDate.S,
         displayDate: '12/1/2017',
-        thumbnail: cookbook1.Thumbnail,
+        thumbnail: cookbook1.Thumbnail.S,
       };
 
       const result = CookbookController.formatCookbookJSON(cookbook1);
@@ -105,211 +91,22 @@ describe('src/CookbookController', () => {
 
     it('should return formatCookbookJSON with title and author', () => {
       const cookbook = {
-        Title: 'Test Title',
-        Author: 'Test Author',
+        Title: {
+          S: 'Test Title',
+        },
+        Author: {
+          S: 'Test Author',
+        },
       };
 
       const expected = {
-        title: cookbook.Title,
-        author: cookbook.Author,
+        title: cookbook.Title.S,
+        author: cookbook.Author.S,
       };
 
       const result = CookbookController.formatCookbookJSON(cookbook);
       assert.isNotNull(result);
       assert.deepEqual(result, expected);
-    });
-  });
-
-  describe('create', () => {
-    it('should return error message if no event', async () => {
-      const error = await CookbookController.create();
-      assert.equal(error, 'No details entered!');
-    });
-
-    it('should return error message if no event params', async () => {
-      const event = {};
-
-      const error = await CookbookController.create(event);
-      assert.equal(error, 'No details entered!');
-    });
-
-    it('should return error message if no event params path', async () => {
-      const event = {
-        params: {},
-      };
-
-      const error = await CookbookController.create(event);
-      assert.equal(error, 'No details entered!');
-    });
-
-    it('should return error message if required params are missing', async () => {
-      const event = {
-        params: {
-          path: {
-            title: null,
-            author: null,
-          },
-        },
-      };
-
-      sandbox.stub(CookbookQueries, 'update');
-
-      // Update should not be called.  Should return validation errors.
-      const errors = await CookbookController.create(event);
-      assert.equal(CookbookQueries.update.callCount, 0);
-      assert.isArray(errors);
-      assert.equal(errors.length, 2);
-    });
-
-    it('should decode title and author', async () => {
-      const event = {
-        params: {
-          path: {
-            title: 'How Easy Is That?',
-            author: 'Author 1 & Author 2',
-          },
-        },
-      };
-
-      const item = {
-        Title: decodeURI(event.params.path.title),
-        Author: decodeURI(event.params.path.author),
-      };
-
-      sandbox.stub(CookbookQueries, 'update')
-        .withArgs(item)
-        .returns(item);
-
-      const result = await CookbookController.create(event);
-      assert.deepEqual(result, item);
-      assert.equal(CookbookQueries.update.callCount, 1);
-    });
-
-    it('should update DB', async () => {
-      const event = {
-        params: {
-          path: {
-            title: 'Test Title',
-            author: 'Test Author',
-            meetingDate: '2018-01-31',
-            blog: 'https://foodnetwork.com',
-          },
-        },
-      };
-
-      const item = {
-        Title: decodeURI(event.params.path.title),
-        Author: decodeURI(event.params.path.author),
-        MeetingDate: event.params.path.meetingDate,
-        Blog: event.params.path.blog,
-      };
-
-      sandbox.stub(CookbookQueries, 'update')
-        .withArgs(item)
-        .returns(item);
-
-      const result = await CookbookController.create(event);
-      assert.deepEqual(result, item);
-      assert.equal(CookbookQueries.update.callCount, 1);
-    });
-  });
-
-  describe('delete', () => {
-    it('should return error message if no event', async () => {
-      const error = await CookbookController.delete();
-      assert.equal(error, 'Error deleting cookbook!');
-    });
-
-    it('should return error message if no event params', async () => {
-      const event = {};
-
-      const error = await CookbookController.delete(event);
-      assert.equal(error, 'Error deleting cookbook!');
-    });
-
-    it('should return error message if no event params path', async () => {
-      const event = {
-        params: {},
-      };
-
-      const error = await CookbookController.delete(event);
-      assert.equal(error, 'Error deleting cookbook!');
-    });
-
-    it('should return error message if required params are missing', async () => {
-      const event = {
-        params: {
-          path: {
-            title: null,
-            author: null,
-          },
-        },
-      };
-
-      sandbox.stub(CookbookQueries, 'delete');
-
-      // Delete should not be called.  Should return validation errors.
-      const errors = await CookbookController.delete(event);
-      assert.equal(CookbookQueries.delete.callCount, 0);
-      assert.isArray(errors);
-      assert.equal(errors.length, 2);
-    });
-
-    it('should not delete if book has recipes', async () => {
-      const title = 'Test Title';
-      const author = 'Test Author';
-
-      const event = {
-        params: {
-          path: {
-            title,
-            author,
-          },
-        },
-      };
-
-      sandbox.stub(RecipeQueries, 'hasRecipes')
-        .withArgs(title)
-        .returns(true);
-
-      sandbox.stub(CookbookQueries, 'delete');
-
-      const result = await CookbookController.delete(event);
-      assert.equal(RecipeQueries.hasRecipes.callCount, 1);
-      assert.equal(CookbookQueries.delete.callCount, 0);
-      assert.equal(result, 'Cookbook has recipes which cannot be deleted.');
-    });
-
-    it('should delete from DB', async () => {
-      const title = 'Test Title';
-      const author = 'Test Author';
-
-      const event = {
-        params: {
-          path: {
-            title,
-            author,
-          },
-        },
-      };
-
-      const item = {
-        Title: title,
-        Author: author,
-      };
-
-      sandbox.stub(RecipeQueries, 'hasRecipes')
-        .withArgs(title)
-        .returns(false);
-
-      sandbox.stub(CookbookQueries, 'delete')
-        .withArgs(title, author)
-        .returns(item);
-
-      const result = await CookbookController.delete(event);
-      assert.deepEqual(result, item);
-      assert.equal(RecipeQueries.hasRecipes.callCount, 1);
-      assert.equal(CookbookQueries.delete.callCount, 1);
     });
   });
 

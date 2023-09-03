@@ -1,79 +1,43 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const awsMock = require('aws-sdk-mock');
+const { mockClient } = require('aws-sdk-client-mock');
+const { DynamoDBClient, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const CookbookQueries = require('../../src/db/CookbookQueries');
 
 const assert = chai.assert;
 
 describe('src/CookbookQueries', () => {
-  const sandbox = sinon.sandbox.create();
-  const dynamodb = 'DynamoDB.DocumentClient';
+  let sandbox;
+  let dynamoDBMock;
 
-  // Reset test environment
+  beforeEach(() => {
+    dynamoDBMock = mockClient(DynamoDBClient);
+    sandbox = sinon.sandbox.create();
+  });
+
   afterEach(() => {
-    awsMock.restore(dynamodb);
+    dynamoDBMock.reset();
     sandbox.restore();
-  });
-
-  describe('update', () => {
-    it('should return success', async () => {
-      const item = {
-        Title: 'Cookbook',
-        Author: 'Author',
-      };
-
-      awsMock.mock(dynamodb, 'put', (params, callback) => {
-        callback(null);
-      });
-
-      const result = await CookbookQueries.update(item);
-      assert.equal(result, 'Success');
-    });
-
-    it('should return error', async () => {
-      sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'put', (params, callback) => {
-        callback('Update Error', null);
-      });
-
-      const result = await CookbookQueries.update();
-      assert.equal(result, 'Update Error');
-      assert.equal(console.error.callCount, 1, 'console.error.callCount');
-    });
-  });
-
-  describe('delete', () => {
-    it('should return success', async () => {
-      awsMock.mock(dynamodb, 'delete', (params, callback) => {
-        callback(null);
-      });
-
-      const result = await CookbookQueries.delete('Cookbook', 'Author');
-      assert.equal(result, 'Success');
-    });
-
-    it('should return error', async () => {
-      sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'delete', (params, callback) => {
-        callback('Delete Error', null);
-      });
-
-      const result = await CookbookQueries.delete('Cookbook', 'Author');
-      assert.equal(console.error.callCount, 1);
-      assert.equal(result, 'Delete Error');
-    });
   });
 
   describe('getAll', () => {
     it('should return success', async () => {
       const cookbook1 = {
-        Title: 'Cookbook 1',
-        Author: 'Author 1',
+        Title: {
+          S: 'Cookbook 1'
+        },
+        Author: {
+          S: 'Author 1',
+        },
       };
 
       const cookbook2 = {
-        Title: 'Cookbook 2',
-        Author: 'Author 2',
+        Title: {
+          S: 'Cookbook 2'
+        },
+        Author: {
+          S: 'Author 2',
+        },
       };
 
       const items = {
@@ -84,19 +48,14 @@ describe('src/CookbookQueries', () => {
         Count: 2,
         ScannedCount: 2,
       };
-
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback(null, items);
-      });
+      dynamoDBMock.on(ScanCommand).resolves(items);
 
       const result = await CookbookQueries.getAll();
       assert.deepEqual(result, items.Items);
     });
 
     it('should return empty array if no items', async () => {
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback(null, {});
-      });
+      dynamoDBMock.on(ScanCommand).resolves({});
 
       const result = await CookbookQueries.getAll();
       assert.deepEqual(result, []);
@@ -104,9 +63,7 @@ describe('src/CookbookQueries', () => {
 
     it('should return empty array if error', async () => {
       sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback('Get Error', null);
-      });
+      dynamoDBMock.on(ScanCommand).rejects('Get Error');
 
       const result = await CookbookQueries.getAll();
       assert.equal(console.error.callCount, 1);

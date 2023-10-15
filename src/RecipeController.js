@@ -18,22 +18,22 @@ module.exports = {
     }
 
     const formattedResult = {
-      cookbook: item.Cookbook,
-      name: item.Name,
-      page: item.Page,
-      link: item.Link,
-      image: item.Image ? `${recipeBaseUrl}${item.Image}` : null,
+      cookbook: item.Cookbook.S,
+      name: item.Name.S,
+      page: item.Page ? item.Page.N : null,
+      link: item.Link ? item.Link.S : null,
+      image: item.Image ? `${recipeBaseUrl}${item.Image.S}` : null,
     };
 
     // Add user info
-    const userEmail = item.UserEmail;
+    const userEmail = item.UserEmail ? item.UserEmail.S : null;
     if (userEmail && users && users[userEmail]) {
-      formattedResult.cook = users[userEmail].FirstName;
+      formattedResult.cook = users[userEmail].FirstName.S;
     }
 
     // Add cookbook author if present
     if (authors) {
-      formattedResult.author = authors[item.Cookbook];
+      formattedResult.author = authors[item.Cookbook.S];
     }
 
     return formattedResult;
@@ -95,7 +95,7 @@ module.exports = {
       const cookbooks = await CookbookQueries.getAll();
       const authors = {};
       cookbooks.forEach((element) => {
-        authors[element.Title] = element.Author;
+        authors[element.Title.S] = element.Author.S;
       });
 
       // format JSON

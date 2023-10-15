@@ -1,25 +1,34 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const awsMock = require('aws-sdk-mock');
+const { mockClient } = require('aws-sdk-client-mock');
+const { DynamoDBClient, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const ConfigQueries = require('../../src/db/ConfigQueries');
 
 const assert = chai.assert;
 
 describe('src/ConfigQueries', () => {
-  const sandbox = sinon.sandbox.create();
-  const dynamodb = 'DynamoDB.DocumentClient';
+  let sandbox;
+  let dynamoDBMock;
 
-  // Reset test environment
+  beforeEach(() => {
+    dynamoDBMock = mockClient(DynamoDBClient);
+    sandbox = sinon.sandbox.create();
+  });
+
   afterEach(() => {
-    awsMock.restore(dynamodb);
+    dynamoDBMock.reset();
     sandbox.restore();
   });
 
   describe('getSettings', () => {
     it('should return map', async () => {
       const setting = {
-        Key: 'Key1',
-        Value: 'Value 1',
+        Key: {
+          S: 'Key1',
+        },
+        Value: {
+          S: 'Value 1',
+        }
       };
 
       const items = {
@@ -30,20 +39,16 @@ describe('src/ConfigQueries', () => {
         ScannedCount: 1,
       };
 
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback(null, items);
-      });
+      dynamoDBMock.on(ScanCommand).resolves(items);
 
       const map = await ConfigQueries.getSettings();
       assert.isNotNull(map);
       assert.equal(Object.keys(map).length, 1);
-      assert.deepEqual(map[setting.Key], setting.Value);
+      assert.deepEqual(map[setting.Key.S], setting.Value.S);
     });
 
     it('should return empty map', async () => {
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback(null, {});
-      });
+      dynamoDBMock.on(ScanCommand).resolves({});
 
       const map = await ConfigQueries.getSettings();
       assert.isNotNull(map);
@@ -52,13 +57,11 @@ describe('src/ConfigQueries', () => {
 
     it('should return error', async () => {
       sandbox.stub(console, 'error');
-      awsMock.mock(dynamodb, 'scan', (params, callback) => {
-        callback('Test Error', null);
-      });
+      dynamoDBMock.on(ScanCommand).rejects('Test Error');
 
       const result = await ConfigQueries.getSettings();
       assert.equal(console.error.callCount, 1);
-      assert.equal(result, 'Test Error');
+      assert.deepEqual(result, {});
     });
   });
 });

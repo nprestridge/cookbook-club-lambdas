@@ -3,94 +3,65 @@
 /**
  * Database queries - Recipe
  */
-const AWS = require('aws-sdk');
+const { DynamoDBClient, QueryCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const { load } = require('../Config');
 
-const dynamodb = load().dynamodb;
+const { dynamodb } = load();
 
 module.exports = {
-  /**
-   * Returns if cookbook has any associated recipes
-   * @param  {string}  title
-   * @return {Boolean}
-   */
-  hasRecipes(title) {
-    return new Promise((resolve) => {
-      const params = this.getRecipesByCookbookParams(title);
-
-      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
-      db.query(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve(err);
-        }
-
-        if (data && data.Items && data.Items.length > 0) {
-          return resolve(true);
-        }
-
-        return resolve(false);
-      });
-    });
-  },
-
   /**
    * Returns all recipes by cookbook
    * @param  {string} cookbook
    * @return {Promise}
    */
-  getAllByCookbook(cookbook) {
-    return new Promise((resolve) => {
-      const params = this.getRecipesByCookbookParams(cookbook);
-
-      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
-      db.query(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve([]);
-        }
-
-        return resolve(data.Items || []);
+  async getAllByCookbook(cookbook) {
+    try {
+      const client = new DynamoDBClient({
+        region: dynamodb.region,
       });
-    });
-  },
 
-  /**
-   * Returns params to get recipes by cookbook
-   * @param  {string} cookbook
-   * @return {object}
-   */
-  getRecipesByCookbookParams(cookbook) {
-    const params = {
-      TableName: 'Recipe',
-      KeyConditionExpression: 'Cookbook = :cookbook',
-      ExpressionAttributeValues: {
-        ':cookbook': cookbook,
-      },
-    };
+      const command = new QueryCommand(
+        {
+          TableName: 'Recipe',
+          KeyConditionExpression: 'Cookbook = :cookbook',
+          ExpressionAttributeValues: {
+            ':cookbook': {
+              S: cookbook,
+            },
+          },
+        },
+      );
 
-    return params;
+      const results = await client.send(command);
+      return results.Items || [];
+    } catch (err) {
+      console.error(err);
+    }
+
+    return [];
   },
 
   /**
    * Returns all recipes
    * @return {Promise}
    */
-  getAll() {
-    return new Promise((resolve) => {
-      const params = {
-        TableName: 'Recipe',
-      };
-
-      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
-      db.scan(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve([]);
-        }
-
-        return resolve(data.Items || []);
+  async getAll() {
+    try {
+      const client = new DynamoDBClient({
+        region: dynamodb.region,
       });
-    });
+
+      const command = new ScanCommand({
+        TableName: 'Recipe',
+      });
+
+      const results = await client.send(command);
+      return results.Items || [];
+    } catch (err) {
+      console.error(err);
+    }
+
+    return [];
   },
+
 };

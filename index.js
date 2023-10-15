@@ -6,12 +6,6 @@ const RecipeController = require('./src/RecipeController');
  * @return {Function} handler function
  */
 const handlers = {
-  createCookbook: function handler(event) {
-    return CookbookController.create(event);
-  },
-  deleteCookbook: function handler(event) {
-    return CookbookController.delete(event);
-  },
   getCookbooks: function handler(event) {
     return CookbookController.getAll(event);
   },
@@ -41,14 +35,6 @@ module.exports = {
       console.error(`FATAL Caught: ${JSON.stringify(e)}`); // eslint-disable-line no-console
       return callback(e);
     }
-  },
-
-  async createCookbook(event, context, callback) {
-    module.exports.execute('createCookbook', event, context, callback);
-  },
-
-  async deleteCookbook(event, context, callback) {
-    module.exports.execute('deleteCookbook', event, context, callback);
   },
 
   async getCookbooks(event, context, callback) {

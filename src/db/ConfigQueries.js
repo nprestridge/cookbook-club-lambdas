@@ -1,39 +1,39 @@
 /* eslint no-console: ["error", { allow: ["warn", "error"] }] */
 
 /**
- * Database queries - User
+ * Database queries - Config
  */
-const AWS = require('aws-sdk');
+const { DynamoDBClient, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const { load } = require('../Config');
 
-const dynamodb = load().dynamodb;
+const { dynamodb } = load();
 
 module.exports = {
   /**
    * Returns a user map of key (email) -> user data
    * @return {Promise}
    */
-  getSettings() {
-    const params = {
-      TableName: 'Config',
-    };
+  async getSettings() {
+    const map = {};
 
-    return new Promise((resolve) => {
-      const db = new AWS.DynamoDB.DocumentClient(dynamodb);
-      db.scan(params, (err, data) => {
-        if (err) {
-          console.error(err);
-          return resolve(err);
-        }
-
-        const map = {};
-        const items = (data && data.Items) ? data.Items : [];
-        items.forEach((element) => {
-          map[element.Key] = element.Value;
-        });
-
-        return resolve(map);
+    try {
+      const client = new DynamoDBClient({
+        region: dynamodb.region,
       });
-    });
+
+      const command = new ScanCommand({
+        TableName: 'Config',
+      });
+
+      const data = await client.send(command);
+      const items = (data && data.Items) ? data.Items : [];
+      items.forEach((element) => {
+        map[element.Key.S] = element.Value.S;
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    return map;
   },
 };

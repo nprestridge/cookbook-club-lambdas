@@ -12,51 +12,91 @@ describe('src/RecipeController', () => {
   const sandbox = sinon.sandbox.create();
 
   const recipe1 = {
-    Cookbook: 'Cookbook A',
-    Name: 'Recipe 1',
-    Page: '123',
-    Link: 'http://recipes.com/1',
-    UserEmail: 'user@email.com',
-    Image: 'recipe_1.jpg',
+    Cookbook: {
+      S: 'Cookbook A',
+    },
+    Name: {
+      S: 'Recipe 1',
+    },
+    Page: {
+      N: 123,
+    },
+    Link: {
+      S: 'http://recipes.com/1',
+    },
+    UserEmail: {
+      S: 'user@email.com',
+    },
+    Image: {
+      S: 'recipe_1.jpg',
+    },
   };
 
   const recipe2 = {
-    Cookbook: 'Cookbook A',
-    Name: 'Recipe 2',
-    Link: 'http://recipes.com/2',
-    UserEmail: 'nouser@email.com',
+    Cookbook: {
+      S: 'Cookbook A',
+    },
+    Name: {
+      S: 'Recipe 2',
+    },
+    Link: {
+      S: 'http://recipes.com/2'
+    },
+    UserEmail: {
+      S: 'nouser@email.com',
+    },
   };
 
   const recipe3 = {
-    Cookbook: 'Cookbook A',
-    Name: 'Recipe 3',
+    Cookbook: {
+      S: 'Cookbook A',
+    },
+    Name: {
+      S: 'Recipe 3',
+    },
   };
 
   const recipe4 = {
-    Cookbook: 'Cookbook B',
-    Name: 'Recipe 4',
+    Cookbook: {
+      S: 'Cookbook B',
+    },
+    Name: {
+      S: 'Recipe 4',
+    },
   };
 
   const recipeBaseUrl = 'http://base-url.com/test/';
   const settingsMap = {
-    RecipeBaseUrl: recipeBaseUrl
+    RecipeBaseUrl: recipeBaseUrl,
   };
 
   const userMap = {
     'user@email.com': {
-      FirstName: 'User',
-      LastName: 'Name',
+      FirstName: {
+        S: 'User',
+      },
+      LastName: {
+        S: 'Name',
+      },
     },
   };
 
   const cookbooks = [
     {
-      Title: 'Cookbook A',
-      Author: 'Author A',
+      Title: {
+        S: 'Cookbook A',
+      },
+      Author: {
+        S: 'Author A',
+      },
     },
     {
-      Title: 'Cookbook B',
-      Author: 'Author B',
+      Title: {
+        S: 'Cookbook B',
+      },
+      Author: {
+        S: 'Author B',
+      },
     },
   ];
 
@@ -78,12 +118,12 @@ describe('src/RecipeController', () => {
 
     it('should return JSON', () => {
       const expected = {
-        cookbook: recipe1.Cookbook,
-        name: recipe1.Name,
-        page: recipe1.Page,
-        link: recipe1.Link,
-        cook: userMap[recipe1.UserEmail].FirstName,
-        image: `${settingsMap.RecipeBaseUrl}${recipe1.Image}`,
+        cookbook: recipe1.Cookbook.S,
+        name: recipe1.Name.S,
+        page: recipe1.Page.N,
+        link: recipe1.Link.S,
+        cook: userMap[recipe1.UserEmail.S].FirstName.S,
+        image: `${settingsMap.RecipeBaseUrl}${recipe1.Image.S}`,
       };
 
       const result = RecipeController.formatRecipeJSON(recipe1, recipeBaseUrl, userMap);
@@ -91,7 +131,7 @@ describe('src/RecipeController', () => {
     });
 
     it('should return JSON with user', () => {
-      const expectedCook = userMap[recipe1.UserEmail].FirstName;
+      const expectedCook = userMap[recipe1.UserEmail.S].FirstName.S;
 
       const result = RecipeController.formatRecipeJSON(recipe1, recipeBaseUrl, userMap);
       assert.equal(result.cook, expectedCook);

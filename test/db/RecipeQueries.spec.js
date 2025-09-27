@@ -4,7 +4,10 @@ const { mockClient } = require('aws-sdk-client-mock');
 const { DynamoDBClient, QueryCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const RecipeQueries = require('../../src/db/RecipeQueries');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, beforeEach, afterEach */
 
 describe('src/RecipeQueries', () => {
   let sandbox;
@@ -52,11 +55,11 @@ describe('src/RecipeQueries', () => {
     it('should return empty array if error', async () => {
       const title = 'Everyday Italian';
 
-      sandbox.stub(console, 'error');
+      const errorStub = sandbox.stub(console, 'error');
       dynamoDBMock.on(QueryCommand).rejects('Recipes Error');
 
       const result = await RecipeQueries.getAllByCookbook(title);
-      assert.equal(console.error.callCount, 1);
+      assert.equal(errorStub.callCount, 1);
       assert.deepEqual(result, []);
     });
   });
@@ -97,11 +100,11 @@ describe('src/RecipeQueries', () => {
     });
 
     it('should return empty array if error', async () => {
-      sandbox.stub(console, 'error');
+      const errorStub = sandbox.stub(console, 'error');
       dynamoDBMock.on(ScanCommand).rejects('Recipes Error');
 
       const result = await RecipeQueries.getAll();
-      assert.equal(console.error.callCount, 1);
+      assert.equal(errorStub.callCount, 1);
       assert.deepEqual(result, []);
     });
   });

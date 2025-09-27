@@ -9,6 +9,8 @@
     "mock:get-cookbooks": "ENV=local node mock/get-cookbooks/run.js",
     "mock:get-cookbook-recipes": "ENV=local node mock/get-cookbook-recipes/run.js",
     "mock:get-recipes": "ENV=local node mock/get-recipes/run.js",
+    "mock:upsert-cookbook": "ENV=local node mock/upsert-cookbook/run.js",
+    "mock:upsert-recipe": "ENV=local node mock/upsert-recipe/run.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:install",
     "package": "npm run build && npm run package:zip",
     "lint": "./node_modules/.bin/eslint *.js src/** mock/**.js",

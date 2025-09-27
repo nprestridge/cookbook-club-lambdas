@@ -4,7 +4,10 @@ const { mockClient } = require('aws-sdk-client-mock');
 const { DynamoDBClient, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const CookbookQueries = require('../../src/db/CookbookQueries');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, beforeEach, afterEach */
 
 describe('src/CookbookQueries', () => {
   let sandbox;
@@ -24,7 +27,7 @@ describe('src/CookbookQueries', () => {
     it('should return success', async () => {
       const cookbook1 = {
         Title: {
-          S: 'Cookbook 1'
+          S: 'Cookbook 1',
         },
         Author: {
           S: 'Author 1',
@@ -33,7 +36,7 @@ describe('src/CookbookQueries', () => {
 
       const cookbook2 = {
         Title: {
-          S: 'Cookbook 2'
+          S: 'Cookbook 2',
         },
         Author: {
           S: 'Author 2',
@@ -62,11 +65,11 @@ describe('src/CookbookQueries', () => {
     });
 
     it('should return empty array if error', async () => {
-      sandbox.stub(console, 'error');
+      const errorStub = sandbox.stub(console, 'error');
       dynamoDBMock.on(ScanCommand).rejects('Get Error');
 
       const result = await CookbookQueries.getAll();
-      assert.equal(console.error.callCount, 1);
+      assert.equal(errorStub.callCount, 1);
       assert.deepEqual(result, []);
     });
   });

@@ -4,7 +4,10 @@ const Config = require('../src/Config');
 const local = require('../src/config/local');
 const production = require('../src/config/production');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, afterEach */
 
 describe('src/Config', () => {
   const env = process.env.ENV;

@@ -4,7 +4,10 @@ const { mockClient } = require('aws-sdk-client-mock');
 const { DynamoDBClient, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const UserQueries = require('../../src/db/UserQueries');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, beforeEach, afterEach */
 
 describe('src/UserQueries', () => {
   let sandbox;
@@ -27,7 +30,7 @@ describe('src/UserQueries', () => {
           S: 'user.1@email.com',
         },
         FirstName: {
-          S: 'One'
+          S: 'One',
         },
       };
 
@@ -67,11 +70,11 @@ describe('src/UserQueries', () => {
     });
 
     it('should return error', async () => {
-      sandbox.stub(console, 'error');
+      const errorStub = sandbox.stub(console, 'error');
       dynamoDBMock.on(ScanCommand).rejects('Test Error');
 
       const result = await UserQueries.getEmailMap();
-      assert.equal(console.error.callCount, 1);
+      assert.equal(errorStub.callCount, 1);
       assert.deepEqual(result, {});
     });
   });

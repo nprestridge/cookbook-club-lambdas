@@ -3,7 +3,9 @@
 /**
  * Database queries - Recipe
  */
-const { DynamoDBClient, QueryCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
+const {
+  DynamoDBClient, QueryCommand, ScanCommand,
+} = require('@aws-sdk/client-dynamodb');
 const { load } = require('../Config');
 
 const { dynamodb } = load();
@@ -63,5 +65,4 @@ module.exports = {
 
     return [];
   },
-
 };

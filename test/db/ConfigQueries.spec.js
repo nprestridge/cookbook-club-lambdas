@@ -4,7 +4,10 @@ const { mockClient } = require('aws-sdk-client-mock');
 const { DynamoDBClient, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const ConfigQueries = require('../../src/db/ConfigQueries');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, beforeEach, afterEach */
 
 describe('src/ConfigQueries', () => {
   let sandbox;
@@ -28,12 +31,12 @@ describe('src/ConfigQueries', () => {
         },
         Value: {
           S: 'Value 1',
-        }
+        },
       };
 
       const items = {
         Items: [
-          setting
+          setting,
         ],
         Count: 1,
         ScannedCount: 1,
@@ -56,11 +59,11 @@ describe('src/ConfigQueries', () => {
     });
 
     it('should return error', async () => {
-      sandbox.stub(console, 'error');
+      const errorStub = sandbox.stub(console, 'error');
       dynamoDBMock.on(ScanCommand).rejects('Test Error');
 
       const result = await ConfigQueries.getSettings();
-      assert.equal(console.error.callCount, 1);
+      assert.equal(errorStub.callCount, 1);
       assert.deepEqual(result, {});
     });
   });

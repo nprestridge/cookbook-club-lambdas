@@ -1,5 +1,6 @@
 const CookbookController = require('./src/CookbookController');
 const RecipeController = require('./src/RecipeController');
+const AdminController = require('./src/AdminController');
 
 /**
  * A map of lambda handlers to controller methods
@@ -14,6 +15,12 @@ const handlers = {
   },
   getRecipes: function handler(event) {
     return RecipeController.getAll(event);
+  },
+  upsertCookbook: function handler(event) {
+    return AdminController.upsertCookbook(event);
+  },
+  upsertRecipe: function handler(event) {
+    return AdminController.upsertRecipe(event);
   },
 };
 
@@ -47,6 +54,14 @@ module.exports = {
 
   async getRecipes(event, context, callback) {
     await module.exports.execute('getRecipes', event, context, callback);
+  },
+
+  async upsertCookbook(event, context, callback) {
+    await module.exports.execute('upsertCookbook', event, context, callback);
+  },
+
+  async upsertRecipe(event, context, callback) {
+    await module.exports.execute('upsertRecipe', event, context, callback);
   },
 
 };

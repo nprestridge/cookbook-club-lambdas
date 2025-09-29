@@ -2,9 +2,11 @@ const chai = require('chai');
 const sinon = require('sinon');
 const CookbookController = require('../../src/CookbookController');
 const CookbookQueries = require('../../src/db/CookbookQueries');
-const RecipeQueries = require('../../src/db/RecipeQueries');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, afterEach */
 
 describe('src/CookbookController', () => {
   const sandbox = sinon.sandbox.create();
@@ -23,7 +25,7 @@ describe('src/CookbookController', () => {
       S: 'http://amazon.com/book1',
     },
     MeetingDate: {
-      S: '2017-12-01'
+      S: '2017-12-01',
     },
     Thumbnail: {
       S: 'http://thumbnail.com',
@@ -38,7 +40,7 @@ describe('src/CookbookController', () => {
       S: 'Author C',
     },
     AmazonLink: {
-      S: 'http://amazon.com/book2'
+      S: 'http://amazon.com/book2',
     },
     MeetingDate: {
       S: '2018-12-01',

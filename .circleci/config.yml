@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.1.0
+  node: circleci/node@7.2.0
 jobs:
   build:
     executor: node/default
@@ -43,7 +43,7 @@ jobs:
           path: /tmp/circleci-test-results
   deploy:
     docker:
-      - image: circleci/python:3.7-stretch
+      - image: circleci/python:3.12
     steps:
       - attach_workspace:
           at: ./
@@ -55,6 +55,8 @@ jobs:
       - run: aws lambda update-function-code --function-name get-cookbooks --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name get-recipes-by-cookbook --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name get-recipes --zip-file fileb://package.zip --region ${REGION}
+      - run: aws lambda update-function-code --function-name upsert-cookbook --zip-file fileb://package.zip --region ${REGION}
+      - run: aws lambda update-function-code --function-name upsert-recipe --zip-file fileb://package.zip --region ${REGION}
 
 workflows:
   version: 2

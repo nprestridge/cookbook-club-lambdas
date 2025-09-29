@@ -1,0 +1,9 @@
+{
+  "body": {
+        "Cookbook": "Cookbook Name",
+        "Name": "TEST - Recipe Name",
+        "Link": "https://www.google.com/",
+        "UserEmail": "name@mail.com",
+        "Image": "file_name.jpeg"
+  }
+}

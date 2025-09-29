@@ -6,7 +6,10 @@ const RecipeQueries = require('../../src/db/RecipeQueries');
 const ConfigQueries = require('../../src/db/ConfigQueries');
 const UserQueries = require('../../src/db/UserQueries');
 
-const assert = chai.assert;
+const { assert } = chai;
+
+// Ensure Mocha globals are available
+/* global describe, it, afterEach */
 
 describe('src/RecipeController', () => {
   const sandbox = sinon.sandbox.create();
@@ -40,7 +43,7 @@ describe('src/RecipeController', () => {
       S: 'Recipe 2',
     },
     Link: {
-      S: 'http://recipes.com/2'
+      S: 'http://recipes.com/2',
     },
     UserEmail: {
       S: 'nouser@email.com',
@@ -153,7 +156,7 @@ describe('src/RecipeController', () => {
     });
   });
 
-  describe('getByCookbook', async() => {
+  describe('getByCookbook', async () => {
     it('should return error message if no event', async () => {
       const error = await RecipeController.getByCookbook();
       assert.equal(error, 'Select a Cookbook');
@@ -239,16 +242,16 @@ describe('src/RecipeController', () => {
 
       const result = await RecipeController.getByCookbook(event);
       assert.isArray(result);
-      assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1,
-        recipeBaseUrl, userMap));
-      assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2,
-        recipeBaseUrl, userMap));
-      assert.deepEqual(result[2], RecipeController.formatRecipeJSON(recipe3,
-        recipeBaseUrl, userMap));
+      assert.deepEqual(result[0], RecipeController
+        .formatRecipeJSON(recipe1, recipeBaseUrl, userMap));
+      assert.deepEqual(result[1], RecipeController
+        .formatRecipeJSON(recipe2, recipeBaseUrl, userMap));
+      assert.deepEqual(result[2], RecipeController
+        .formatRecipeJSON(recipe3, recipeBaseUrl, userMap));
     });
   });
 
-  describe('getAll', async() => {
+  describe('getAll', async () => {
     const event = {
       params: {
         path: {
@@ -294,14 +297,14 @@ describe('src/RecipeController', () => {
       const result = await RecipeController.getAll(event);
       assert.isArray(result);
       assert.equal(result.length, 4);
-      assert.deepEqual(result[0], RecipeController.formatRecipeJSON(recipe1,
-        recipeBaseUrl, userMap, authorsMap));
-      assert.deepEqual(result[1], RecipeController.formatRecipeJSON(recipe2,
-        recipeBaseUrl, userMap, authorsMap));
-      assert.deepEqual(result[2], RecipeController.formatRecipeJSON(recipe3,
-        recipeBaseUrl, userMap, authorsMap));
-      assert.deepEqual(result[3], RecipeController.formatRecipeJSON(recipe4,
-        recipeBaseUrl, userMap, authorsMap));
+      assert.deepEqual(result[0], RecipeController
+        .formatRecipeJSON(recipe1, recipeBaseUrl, userMap, authorsMap));
+      assert.deepEqual(result[1], RecipeController
+        .formatRecipeJSON(recipe2, recipeBaseUrl, userMap, authorsMap));
+      assert.deepEqual(result[2], RecipeController
+        .formatRecipeJSON(recipe3, recipeBaseUrl, userMap, authorsMap));
+      assert.deepEqual(result[3], RecipeController
+        .formatRecipeJSON(recipe4, recipeBaseUrl, userMap, authorsMap));
     });
   });
 });

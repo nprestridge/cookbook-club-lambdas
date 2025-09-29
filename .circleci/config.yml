@@ -49,7 +49,7 @@ jobs:
           at: ./
       - run:
           name: Install awscli
-          command: sudo pip install awscli
+          command: python -m pip install --user awscli
       - run: aws lambda update-function-code --function-name create-cookbook --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name delete-cookbook --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name get-cookbooks --zip-file fileb://package.zip --region ${REGION}

@@ -29,6 +29,31 @@ module.exports = {
     }
   },
 
+  async deleteCookbook(event) {
+    try {
+      const cookbookData = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+
+      if (!cookbookData || !cookbookData.Author || !cookbookData.Title) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Missing required field: Title, Author' }),
+        };
+      }
+
+      await CookbookCommands.deleteCookbook(cookbookData.Title, cookbookData.Author);
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: `Cookbook '${cookbookData.Title}' deleted successfully` }),
+      };
+    } catch (err) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: err.message }),
+      };
+    }
+  },
+
   async upsertRecipe(event) {
     try {
       const recipeData = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
@@ -45,6 +70,31 @@ module.exports = {
       return {
         statusCode: 201,
         body: JSON.stringify(result),
+      };
+    } catch (err) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: err.message }),
+      };
+    }
+  },
+
+  async deleteRecipe(event) {
+    try {
+      const recipeData = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+
+      if (!recipeData || !recipeData.Cookbook || !recipeData.Name) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Missing required fields: Cookbook, Name' }),
+        };
+      }
+
+      await RecipeCommands.deleteRecipe(recipeData.Cookbook, recipeData.Name);
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: `Recipe '${recipeData.Name}' deleted successfully` }),
       };
     } catch (err) {
       return {

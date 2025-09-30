@@ -29,6 +29,7 @@ describe('AdminController', () => {
       };
       cookbookStub.resolves(cookbook);
       const event = { body: cookbook };
+
       const res = await AdminController.upsertCookbook(event);
       assert.equal(res.statusCode, 201);
       assert.include(res.body, 'slug');
@@ -41,6 +42,7 @@ describe('AdminController', () => {
       };
       cookbookStub.resolves(cookbook);
       const event = { body: JSON.stringify(cookbook) };
+
       const res = await AdminController.upsertCookbook(event);
       assert.equal(res.statusCode, 201);
       assert.include(res.body, 'slug');
@@ -49,6 +51,7 @@ describe('AdminController', () => {
 
     it('should return 400 if required fields are missing', async () => {
       const event = { body: JSON.stringify({ Title: 'Test' }) };
+
       const res = await AdminController.upsertCookbook(event);
       assert.equal(res.statusCode, 400);
       assert.include(res.body, 'Missing required fields');
@@ -60,6 +63,7 @@ describe('AdminController', () => {
         Slug: 'slug', Title: 'title', Author: 'author', MeetingDate: '2025-09-28',
       };
       const event = { body: JSON.stringify(cookbook) };
+
       const res = await AdminController.upsertCookbook(event);
       assert.equal(res.statusCode, 500);
       assert.include(res.body, 'fail');
@@ -71,6 +75,7 @@ describe('AdminController', () => {
       const recipe = { Cookbook: 'cb', Name: 'name', UserEmail: 'user@mail.com' };
       recipeStub.resolves(recipe);
       const event = { body: recipe };
+
       const res = await AdminController.upsertRecipe(event);
       assert.equal(res.statusCode, 201);
       assert.include(res.body, 'cb');
@@ -81,6 +86,7 @@ describe('AdminController', () => {
       const recipe = { Cookbook: 'cb', Name: 'name', UserEmail: 'user@mail.com' };
       recipeStub.resolves(recipe);
       const event = { body: JSON.stringify(recipe) };
+
       const res = await AdminController.upsertRecipe(event);
       assert.equal(res.statusCode, 201);
       assert.include(res.body, 'cb');
@@ -89,6 +95,7 @@ describe('AdminController', () => {
 
     it('should return 400 if required fields are missing', async () => {
       const event = { body: JSON.stringify({ Name: 'Test' }) };
+
       const res = await AdminController.upsertRecipe(event);
       assert.equal(res.statusCode, 400);
       assert.include(res.body, 'Missing required fields');
@@ -98,9 +105,144 @@ describe('AdminController', () => {
       recipeStub.rejects(new Error('fail'));
       const recipe = { Cookbook: 'cb', Name: 'name', UserEmail: 'user@mail.com' };
       const event = { body: JSON.stringify(recipe) };
+
       const res = await AdminController.upsertRecipe(event);
       assert.equal(res.statusCode, 500);
       assert.include(res.body, 'fail');
+    });
+  });
+
+  describe('deleteCookbook', () => {
+    let deleteStub;
+
+    beforeEach(() => {
+      deleteStub = sandbox.stub(CookbookCommands, 'deleteCookbook');
+    });
+
+    afterEach(() => {
+      deleteStub.restore();
+    });
+
+    it('should return 400 if required fields are missing', async () => {
+      const event = { body: JSON.stringify({ Author: 'A' }) };
+
+      const res = await AdminController.deleteCookbook(event);
+      assert.equal(res.statusCode, 400);
+      assert.include(res.body, 'Missing required field');
+    });
+
+    it('should call deleteCookbook and return 200 on success', async () => {
+      deleteStub.resolves();
+      const event = { body: JSON.stringify({ Title: 'T', Author: 'A' }) };
+
+      const res = await AdminController.deleteCookbook(event);
+      assert.equal(res.statusCode, 200);
+      assert.include(res.body, 'deleted successfully');
+      assert.isTrue(deleteStub.calledOnce);
+    });
+
+    it('should return 500 if deleteCookbook throws', async () => {
+      deleteStub.rejects(new Error('fail'));
+      const event = { body: JSON.stringify({ Title: 'T', Author: 'A' }) };
+
+      const res = await AdminController.deleteCookbook(event);
+      assert.equal(res.statusCode, 500);
+      assert.include(res.body, 'fail');
+    });
+
+    it('should handle event.body as object', async () => {
+      deleteStub.resolves();
+      const event = { body: { Title: 'T', Author: 'A' } };
+
+      const res = await AdminController.deleteCookbook(event);
+      assert.equal(res.statusCode, 200);
+      assert.include(res.body, 'deleted successfully');
+      assert.isTrue(deleteStub.calledOnce);
+    });
+
+    it('should handle event.body as JSON string', async () => {
+      deleteStub.resolves();
+      const event = { body: JSON.stringify({ Title: 'T', Author: 'A' }) };
+
+      const res = await AdminController.deleteCookbook(event);
+      assert.equal(res.statusCode, 200);
+      assert.include(res.body, 'deleted successfully');
+      assert.isTrue(deleteStub.calledOnce);
+    });
+
+    it('should handle non-JSON event.body gracefully', async () => {
+      const event = { body: '{invalidJson:}' };
+
+      const res = await AdminController.deleteCookbook(event);
+      assert.equal(res.statusCode, 500);
+      assert.include(res.body, 'error');
+    });
+  });
+
+  describe('deleteRecipe', () => {
+    let deleteStub;
+
+    beforeEach(() => {
+      deleteStub = sandbox.stub(RecipeCommands, 'deleteRecipe');
+    });
+
+    afterEach(() => {
+      deleteStub.restore();
+    });
+
+    it('should return 400 if required fields are missing', async () => {
+      const event = { body: JSON.stringify({ Cookbook: 'C' }) };
+
+      const res = await AdminController.deleteRecipe(event);
+      assert.equal(res.statusCode, 400);
+      assert.include(res.body, 'Missing required fields');
+    });
+
+    it('should call deleteRecipe and return 200 on success', async () => {
+      deleteStub.resolves();
+      const event = { body: JSON.stringify({ Cookbook: 'C', Name: 'N' }) };
+
+      const res = await AdminController.deleteRecipe(event);
+      assert.equal(res.statusCode, 200);
+      assert.include(res.body, 'deleted successfully');
+      assert.isTrue(deleteStub.calledOnce);
+    });
+
+    it('should return 500 if deleteRecipe throws', async () => {
+      deleteStub.rejects(new Error('fail'));
+      const event = { body: JSON.stringify({ Cookbook: 'C', Name: 'N' }) };
+
+      const res = await AdminController.deleteRecipe(event);
+      assert.equal(res.statusCode, 500);
+      assert.include(res.body, 'fail');
+    });
+
+    it('should handle event.body as object', async () => {
+      deleteStub.resolves();
+      const event = { body: { Cookbook: 'C', Name: 'N' } };
+
+      const res = await AdminController.deleteRecipe(event);
+      assert.equal(res.statusCode, 200);
+      assert.include(res.body, 'deleted successfully');
+      assert.isTrue(deleteStub.calledOnce);
+    });
+
+    it('should handle event.body as JSON string', async () => {
+      deleteStub.resolves();
+      const event = { body: JSON.stringify({ Cookbook: 'C', Name: 'N' }) };
+
+      const res = await AdminController.deleteRecipe(event);
+      assert.equal(res.statusCode, 200);
+      assert.include(res.body, 'deleted successfully');
+      assert.isTrue(deleteStub.calledOnce);
+    });
+
+    it('should handle non-JSON event.body gracefully', async () => {
+      const event = { body: '{invalidJson:}' };
+
+      const res = await AdminController.deleteRecipe(event);
+      assert.equal(res.statusCode, 500);
+      assert.include(res.body, 'error');
     });
   });
 });

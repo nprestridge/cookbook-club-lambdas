@@ -4,7 +4,7 @@
  * Database commands - Recipe
  */
 const {
-  DynamoDBClient, PutItemCommand,
+  DynamoDBClient, PutItemCommand, DeleteItemCommand,
 } = require('@aws-sdk/client-dynamodb');
 const { load } = require('../Config');
 
@@ -48,4 +48,33 @@ module.exports = {
       throw err;
     }
   },
+
+  /**
+   * Deletes a recipe from DynamoDB by Cookbook and Name
+   * @param {string} cookbook - Cookbook name
+   * @param {string} name - Recipe name
+   * @return {Promise<object>} - DynamoDB delete response
+   */
+  async deleteRecipe(cookbook, name) {
+    try {
+      const client = new DynamoDBClient({
+        region: dynamodb.region,
+      });
+
+      const command = new DeleteItemCommand({
+        TableName: 'Recipe',
+        Key: {
+          Cookbook: { S: String(cookbook) },
+          Name: { S: String(name) },
+        },
+      });
+
+      const result = await client.send(command);
+      return result;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  },
+
 };

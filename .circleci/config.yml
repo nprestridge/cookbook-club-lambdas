@@ -50,13 +50,13 @@ jobs:
       - run:
           name: Install awscli
           command: python -m pip install --user awscli
-      - run: aws lambda update-function-code --function-name create-cookbook --zip-file fileb://package.zip --region ${REGION}
-      - run: aws lambda update-function-code --function-name delete-cookbook --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name get-cookbooks --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name get-recipes-by-cookbook --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name get-recipes --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name upsert-cookbook --zip-file fileb://package.zip --region ${REGION}
       - run: aws lambda update-function-code --function-name upsert-recipe --zip-file fileb://package.zip --region ${REGION}
+      - run: aws lambda update-function-code --function-name delete-cookbook --zip-file fileb://package.zip --region ${REGION}
+      - run: aws lambda update-function-code --function-name delete-recipe --zip-file fileb://package.zip --region ${REGION}
 
 workflows:
   version: 2

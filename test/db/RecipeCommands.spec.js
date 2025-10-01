@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const { mockClient } = require('aws-sdk-client-mock');
-const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, PutItemCommand, DeleteItemCommand } = require('@aws-sdk/client-dynamodb');
 const RecipeCommands = require('../../src/db/RecipeCommands');
 
 const { assert } = chai;
@@ -71,6 +71,34 @@ describe('src/RecipeCommands', () => {
       }
       sandbox.restore();
       dynamoDBMock.reset();
+    });
+  });
+
+  describe('deleteRecipe', () => {
+    it('should delete a recipe by Cookbook and Name', async () => {
+      const cookbook = 'Test Cookbook';
+      const name = 'Test Recipe';
+      dynamoDBMock.on(DeleteItemCommand)
+        .resolves({ Attributes: { Cookbook: { S: cookbook }, Name: { S: name } } });
+
+      const result = await RecipeCommands.deleteRecipe(cookbook, name);
+      assert.deepEqual(result, { Attributes: { Cookbook: { S: cookbook }, Name: { S: name } } });
+      assert.equal(dynamoDBMock.commandCalls(DeleteItemCommand).length, 1);
+    });
+
+    it('should throw and log error if DynamoDB fails', async () => {
+      const errorStub = sandbox.stub(console, 'error');
+      const cookbook = 'Test Cookbook';
+      const name = 'Test Recipe';
+      dynamoDBMock.on(DeleteItemCommand).rejects(new Error('DynamoDB error'));
+
+      try {
+        await RecipeCommands.deleteRecipe(cookbook, name);
+        assert.fail('Expected error to be thrown');
+      } catch (err) {
+        assert.equal(err.message, 'DynamoDB error');
+        assert.equal(errorStub.callCount, 1);
+      }
     });
   });
 });

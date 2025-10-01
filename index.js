@@ -22,6 +22,12 @@ const handlers = {
   upsertRecipe: function handler(event) {
     return AdminController.upsertRecipe(event);
   },
+  deleteCookbook: function handler(event) {
+    return AdminController.deleteCookbook(event);
+  },
+  deleteRecipe: function handler(event) {
+    return AdminController.deleteRecipe(event);
+  },
 };
 
 module.exports = {
@@ -62,6 +68,14 @@ module.exports = {
 
   async upsertRecipe(event, context, callback) {
     await module.exports.execute('upsertRecipe', event, context, callback);
+  },
+
+  async deleteCookbook(event, context, callback) {
+    await module.exports.execute('deleteCookbook', event, context, callback);
+  },
+
+  async deleteRecipe(event, context, callback) {
+    await module.exports.execute('deleteRecipe', event, context, callback);
   },
 
 };

@@ -18,6 +18,9 @@ describe('src/CookbookController', () => {
     Author: {
       S: 'Author D',
     },
+    Slug: {
+      S: 'title-a',
+    },
     Blog: {
       S: 'http://blog.com',
     },
@@ -39,6 +42,9 @@ describe('src/CookbookController', () => {
     Author: {
       S: 'Author C',
     },
+    Slug: {
+      S: 'title-b',
+    },
     AmazonLink: {
       S: 'http://amazon.com/book2',
     },
@@ -54,6 +60,9 @@ describe('src/CookbookController', () => {
     Author: {
       S: 'Author B',
     },
+    Slug: {
+      S: 'a-title',
+    },
   };
 
   const cookbook4 = {
@@ -62,6 +71,9 @@ describe('src/CookbookController', () => {
     },
     Author: {
       S: 'Author A',
+    },
+    Slug: {
+      S: 'b-title',
     },
   };
 
@@ -79,6 +91,7 @@ describe('src/CookbookController', () => {
       const expected = {
         title: cookbook1.Title.S,
         author: cookbook1.Author.S,
+        slug: cookbook1.Slug.S,
         blog: cookbook1.Blog.S,
         amazon: cookbook1.AmazonLink.S,
         isoDate: cookbook1.MeetingDate.S,
@@ -99,11 +112,15 @@ describe('src/CookbookController', () => {
         Author: {
           S: 'Test Author',
         },
+        Slug: {
+          S: 'test-title',
+        },
       };
 
       const expected = {
         title: cookbook.Title.S,
         author: cookbook.Author.S,
+        slug: cookbook.Slug.S,
       };
 
       const result = CookbookController.formatCookbookJSON(cookbook);

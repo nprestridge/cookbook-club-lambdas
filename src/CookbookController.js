@@ -15,6 +15,7 @@ module.exports = {
     const formattedResult = {
       title: item.Title.S,
       author: item.Author.S,
+      slug: item.Slug.S,
     };
 
     if (item.Blog) {
